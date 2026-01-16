@@ -1,0 +1,694 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background: #1a1a2e;
+    color: #eee;
+    min-height: 100vh;
+}
+
+/* Landing Page */
+.landing-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    position: relative;
+}
+
+.landing-title {
+    color: #00ff88;
+    font-size: 3rem;
+    margin-bottom: 15px;
+    text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.landing-subtitle {
+    color: #888;
+    font-size: 1.1rem;
+    margin-bottom: 60px;
+    max-width: 500px;
+}
+
+.landing-buttons {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.landing-btn {
+    padding: 20px 50px;
+    font-family: inherit;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.3s;
+    min-width: 200px;
+}
+
+.landing-btn.challenges {
+    background: #00ff88;
+    color: #1a1a2e;
+    border: 3px solid #00ff88;
+}
+
+.landing-btn.challenges:hover {
+    background: transparent;
+    color: #00ff88;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+}
+
+.landing-btn.practice {
+    background: transparent;
+    color: #ff6b6b;
+    border: 3px solid #ff6b6b;
+}
+
+.landing-btn.practice:hover {
+    background: #ff6b6b;
+    color: #1a1a2e;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+}
+
+/* App Page */
+.app-page {
+    padding: 20px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.app-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.back-btn {
+    padding: 10px 20px;
+    background: transparent;
+    border: 2px solid #666;
+    color: #888;
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+.back-btn:hover {
+    border-color: #00ff88;
+    color: #00ff88;
+}
+
+.app-title {
+    color: #00ff88;
+    font-size: 1.5rem;
+}
+
+.difficulty-selector {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.difficulty-btn {
+    padding: 10px 20px;
+    border: 2px solid #00ff88;
+    background: transparent;
+    color: #00ff88;
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+.difficulty-btn:hover, .difficulty-btn.active {
+    background: #00ff88;
+    color: #1a1a2e;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 900px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+
+    .landing-title {
+        font-size: 2rem;
+    }
+
+    .landing-btn {
+        padding: 15px 30px;
+        font-size: 1rem;
+        min-width: 160px;
+    }
+}
+
+.panel {
+    background: #16213e;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #0f3460;
+}
+
+.panel-header {
+    background: #0f3460;
+    padding: 10px 15px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.panel-header .title {
+    color: #00ff88;
+}
+
+.panel-content {
+    padding: 15px;
+    height: 300px;
+    overflow-y: auto;
+}
+
+.text-display {
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.6;
+}
+
+.text-display .line {
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+.text-display .line.highlighted {
+    background: rgba(0, 255, 136, 0.2);
+    border-left: 3px solid #00ff88;
+}
+
+.text-display .line.selected {
+    background: rgba(255, 193, 7, 0.2);
+    border-left: 3px solid #ffc107;
+}
+
+.text-display .match {
+    background: #ff6b6b;
+    color: #fff;
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+.output-display {
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #ffc107;
+    line-height: 1.6;
+}
+
+.command-section {
+    background: #16213e;
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid #0f3460;
+}
+
+.terminal-prompt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.prompt-symbol {
+    color: #00ff88;
+    font-weight: bold;
+}
+
+.command-input {
+    flex: 1;
+    background: #0d1b2a;
+    border: 1px solid #0f3460;
+    color: #fff;
+    padding: 12px 15px;
+    font-family: inherit;
+    font-size: 1rem;
+    border-radius: 5px;
+    outline: none;
+}
+
+.command-input:focus {
+    border-color: #00ff88;
+}
+
+.run-btn {
+    padding: 12px 25px;
+    background: #00ff88;
+    color: #1a1a2e;
+    border: none;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+.run-btn:hover {
+    background: #00cc6a;
+}
+
+.challenge-section {
+    background: #16213e;
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid #0f3460;
+    margin-bottom: 20px;
+}
+
+.challenge-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.challenge-title {
+    color: #00ff88;
+    font-size: 1.1rem;
+}
+
+.challenge-nav {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.nav-btn {
+    padding: 5px 15px;
+    background: transparent;
+    border: 1px solid #0f3460;
+    color: #eee;
+    cursor: pointer;
+    border-radius: 3px;
+    font-family: inherit;
+}
+
+.nav-btn:hover {
+    border-color: #00ff88;
+    color: #00ff88;
+}
+
+.challenge-description {
+    background: #0d1b2a;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border-left: 3px solid #ffc107;
+}
+
+.expected-output {
+    background: #0d1b2a;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 3px solid #00ff88;
+}
+
+.expected-output h4 {
+    color: #00ff88;
+    margin-bottom: 10px;
+}
+
+.expected-output pre {
+    color: #888;
+    white-space: pre-wrap;
+}
+
+.help-section {
+    background: #16213e;
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid #0f3460;
+    margin-bottom: 20px;
+}
+
+.help-title {
+    color: #00ff88;
+    margin-bottom: 15px;
+}
+
+.commands-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+}
+
+.command-card {
+    background: #0d1b2a;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #0f3460;
+}
+
+.command-card h4 {
+    color: #ff6b6b;
+    margin-bottom: 8px;
+}
+
+.command-card p {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-bottom: 8px;
+}
+
+.command-card code {
+    background: #16213e;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    color: #ffc107;
+}
+
+.success-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #00ff88;
+    color: #1a1a2e;
+    padding: 15px 25px;
+    border-radius: 5px;
+    font-weight: bold;
+    display: none;
+    animation: slideIn 0.3s ease;
+    z-index: 100;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.error-message {
+    color: #ff6b6b;
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(255, 107, 107, 0.1);
+    border-radius: 5px;
+    display: none;
+}
+
+.stats {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.stats span {
+    color: #00ff88;
+}
+
+/* Practice Mode Styles */
+.practice-config {
+    background: #16213e;
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid #0f3460;
+    margin-bottom: 20px;
+}
+
+.practice-config h3 {
+    color: #ff6b6b;
+    margin-bottom: 15px;
+}
+
+.command-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.command-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    background: #0d1b2a;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.command-checkbox:hover {
+    border-color: #0f3460;
+}
+
+.command-checkbox.selected {
+    border-color: #00ff88;
+    background: rgba(0, 255, 136, 0.1);
+}
+
+.command-checkbox input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #00ff88;
+}
+
+.command-checkbox label {
+    cursor: pointer;
+    font-weight: bold;
+    color: #ffc107;
+}
+
+.command-checkbox .cmd-desc {
+    font-size: 0.75rem;
+    color: #888;
+    margin-left: auto;
+}
+
+.practice-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.practice-actions button {
+    padding: 10px 20px;
+    border: none;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+.generate-btn {
+    background: #00ff88;
+    color: #1a1a2e;
+}
+
+.generate-btn:hover {
+    background: #00cc6a;
+}
+
+.select-all-btn, .deselect-all-btn {
+    background: #0f3460;
+    color: #eee;
+}
+
+.select-all-btn:hover, .deselect-all-btn:hover {
+    background: #1a4a7a;
+}
+
+.practice-stats {
+    display: flex;
+    gap: 20px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #0f3460;
+    flex-wrap: wrap;
+}
+
+.practice-stat {
+    background: #0d1b2a;
+    padding: 10px 15px;
+    border-radius: 5px;
+}
+
+.practice-stat .label {
+    color: #888;
+    font-size: 0.8rem;
+}
+
+.practice-stat .value {
+    color: #00ff88;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.target-command {
+    display: inline-block;
+    background: #ff6b6b;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Reset Progress Button */
+.reset-btn {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    padding: 12px 24px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: #888;
+    border: 1px solid #333;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.reset-btn:hover {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff6b6b;
+    border-color: #ff6b6b;
+}
+
+/* Progress Indicators on Difficulty Buttons */
+.difficulty-btn .progress-indicator {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.difficulty-btn.completed {
+    position: relative;
+    background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+    color: #1a1a2e;
+}
+
+.difficulty-btn.completed::after {
+    content: '\2713';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #00ff88;
+    color: #1a1a2e;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* Best Streak highlight */
+#best-streak-count {
+    color: #ffd700;
+}
+
+/* Challenge Grid */
+.challenge-grid-container {
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.challenge-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+}
+
+.challenge-box {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid #333;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.challenge-box:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #00ff88;
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.challenge-box.active {
+    background: #00ff88;
+    color: #1a1a2e;
+    border-color: #00ff88;
+    font-weight: bold;
+}
+
+.challenge-box.solved {
+    background: rgba(0, 255, 136, 0.2);
+    border-color: #00ff88;
+    color: #00ff88;
+}
+
+.challenge-box.solved::after {
+    content: '\2713';
+    font-size: 0.9rem;
+}
+
+.challenge-box.solved:hover {
+    background: rgba(0, 255, 136, 0.3);
+}
+
+.challenge-box.active.solved {
+    background: #00ff88;
+    color: #1a1a2e;
+}
+
+.challenge-box.active.solved::after {
+    content: '\2713';
+    color: #1a1a2e;
+}

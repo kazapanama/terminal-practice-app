@@ -1,0 +1,296 @@
+[
+    {
+        "text": "ERROR 2024-01-15 Connection timeout from 192.168.1.50\nINFO 2024-01-15 User login successful\nERROR 2024-01-15 Database query failed\nWARNING 2024-01-15 High memory usage\nERROR 2024-01-16 Connection timeout from 192.168.1.100",
+        "description": "Count ERROR lines only.",
+        "expected": "3",
+        "hint": "Use grep -c ERROR"
+    },
+    {
+        "text": "apple:red:5:1.50\nbanana:yellow:12:0.75\ncherry:red:20:2.00\ngrape:purple:25:1.00",
+        "description": "Find red fruits and extract name and price (fields 1 and 4).",
+        "expected": "apple:1.50\ncherry:2.00",
+        "hint": "Chain: grep red | cut -d':' -f1,4"
+    },
+    {
+        "text": "server1 cpu=45%\nserver2 cpu=80%\nserver3 cpu=30%\nserver1 cpu=50%\nserver2 cpu=85%\nserver1 cpu=55%",
+        "description": "Count entries per server, sorted by count descending.",
+        "expected": "      3 server1\n      2 server2\n      1 server3",
+        "hint": "Chain: cut -d' ' -f1 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "cat,mammal,domestic\ndog,mammal,domestic\neagle,bird,wild\nsalmon,fish,wild\nparrot,bird,domestic",
+        "description": "Count animals by type (field 2), most common first.",
+        "expected": "      2 bird\n      2 mammal\n      1 fish",
+        "hint": "Chain: cut -d',' -f2 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "user:alice:active:admin\nuser:bob:inactive:guest\nuser:charlie:active:admin\nuser:diana:active:guest",
+        "description": "Find active admins, extract username (field 2).",
+        "expected": "alice\ncharlie",
+        "hint": "Chain: grep active | grep admin | cut -d':' -f2"
+    },
+    {
+        "text": "2024-01-15 ERROR disk full\n2024-01-15 INFO started\n2024-01-16 ERROR memory\n2024-01-16 ERROR network\n2024-01-17 INFO done",
+        "description": "Extract dates with ERROR, show unique dates.",
+        "expected": "2024-01-15\n2024-01-16",
+        "hint": "Chain: grep ERROR | cut -d' ' -f1 | sort -u"
+    },
+    {
+        "text": "alice,100,passed\nbob,85,passed\ncharlie,60,failed\ndiana,95,passed\neve,55,failed",
+        "description": "Find failed students, extract names, sort alphabetically.",
+        "expected": "charlie\neve",
+        "hint": "Chain: grep failed | cut -d',' -f1 | sort"
+    },
+    {
+        "text": "GET /index.html 200\nPOST /login 401\nGET /about.html 200\nGET /admin 403\nPOST /api 500",
+        "description": "Find non-200 responses, count them.",
+        "expected": "3",
+        "hint": "Chain: grep -v 200 | wc -l"
+    },
+    {
+        "text": "host1:web:running:80\nhost2:db:stopped:3306\nhost3:web:running:8080\nhost4:cache:running:6379",
+        "description": "Find running services, extract host and port.",
+        "expected": "host1:80\nhost3:8080\nhost4:6379",
+        "hint": "Chain: grep running | cut -d':' -f1,4"
+    },
+    {
+        "text": "apple 10\nbanana 5\napple 15\ncherry 8\nbanana 12\napple 20",
+        "description": "Extract first column (fruit), count each, sort by count.",
+        "expected": "      3 apple\n      2 banana\n      1 cherry",
+        "hint": "Chain: cut -d' ' -f1 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "ERROR: [module1] failed\nINFO: [module2] started\nERROR: [module1] crashed\nWARN: [module3] slow\nERROR: [module2] timeout",
+        "description": "Find ERROR lines, count by module.",
+        "expected": "      2 ERROR: [module1]\n      1 ERROR: [module2]",
+        "hint": "Chain: grep ERROR | cut -d']' -f1 | sort | uniq -c | sort -rn (add ] back)"
+    },
+    {
+        "text": "john,eng,75000\nmary,sales,60000\nbob,eng,80000\nalice,hr,55000\ncharlie,eng,90000",
+        "description": "Find engineering dept, extract names, sort.",
+        "expected": "bob\ncharlie\njohn",
+        "hint": "Chain: grep eng | cut -d',' -f1 | sort"
+    },
+    {
+        "text": "192.168.1.1 GET /page1\n10.0.0.5 POST /api\n192.168.1.1 GET /page2\n192.168.1.2 GET /page1\n10.0.0.5 GET /home",
+        "description": "Count requests per IP, sorted descending.",
+        "expected": "      2 10.0.0.5\n      2 192.168.1.1\n      1 192.168.1.2",
+        "hint": "Chain: cut -d' ' -f1 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "task1:pending:low\ntask2:done:high\ntask3:pending:high\ntask4:done:low\ntask5:pending:medium",
+        "description": "Find pending tasks, extract task and priority.",
+        "expected": "task1:low\ntask3:high\ntask5:medium",
+        "hint": "Chain: grep pending | cut -d':' -f1,3"
+    },
+    {
+        "text": "2024-01-15 user1 login\n2024-01-15 user2 logout\n2024-01-16 user1 logout\n2024-01-16 user1 login\n2024-01-16 user3 login",
+        "description": "Count logins per user, sorted.",
+        "expected": "      2 user1\n      1 user3",
+        "hint": "Chain: grep login | cut -d' ' -f2 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "item1,electronics,500\nitem2,clothing,50\nitem3,electronics,300\nitem4,food,25\nitem5,electronics,150",
+        "description": "Find electronics, extract item and price, sort by price.",
+        "expected": "item5,150\nitem3,300\nitem1,500",
+        "hint": "Chain: grep electronics | cut -d',' -f1,3 | sort -t',' -k2 -n"
+    },
+    {
+        "text": "alpha\nbeta\ngamma\ndelta\nepsilon\nzeta\neta\ntheta",
+        "description": "Show lines 3-6, reverse order, uppercase.",
+        "expected": "ZETA\nEPSILON\nDELTA\nGAMMA",
+        "hint": "Chain: head -6 | tail -4 | tac | tr 'a-z' 'A-Z'"
+    },
+    {
+        "text": "server1,up,100\nserver2,down,0\nserver3,up,85\nserver4,down,0\nserver5,up,95",
+        "description": "Find up servers, count them.",
+        "expected": "3",
+        "hint": "Use grep -c up"
+    },
+    {
+        "text": "file1.txt:10\nfile2.log:25\nfile1.txt:15\nfile3.txt:8\nfile2.log:30",
+        "description": "Extract filenames, count occurrences, sort.",
+        "expected": "      2 file1.txt\n      2 file2.log\n      1 file3.txt",
+        "hint": "Chain: cut -d':' -f1 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "buy AAPL 100\nsell GOOGL 50\nbuy AAPL 200\nbuy MSFT 75\nsell AAPL 150",
+        "description": "Count buy orders per stock.",
+        "expected": "      2 AAPL\n      1 MSFT",
+        "hint": "Chain: grep buy | cut -d' ' -f2 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "node1:master:active\nnode2:slave:active\nnode3:slave:inactive\nnode4:master:active\nnode5:slave:active",
+        "description": "Find active masters, extract node names.",
+        "expected": "node1\nnode4",
+        "hint": "Chain: grep master | grep active | cut -d':' -f1"
+    },
+    {
+        "text": "app1,v1.0,stable\napp2,v2.1,beta\napp3,v1.5,stable\napp1,v1.1,stable\napp2,v2.2,stable",
+        "description": "Find stable apps, extract names, count unique.",
+        "expected": "      2 app1\n      1 app2\n      1 app3",
+        "hint": "Chain: grep stable | cut -d',' -f1 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "ERROR in function processData at line 42\nWARN in function validate at line 15\nERROR in function connect at line 88\nINFO in function main at line 5",
+        "description": "Extract function names from ERROR lines.",
+        "expected": "processData\nconnect",
+        "hint": "Chain: grep ERROR | cut -d' ' -f4"
+    },
+    {
+        "text": "red,small,10\nblue,large,25\nred,large,30\ngreen,small,15\nblue,small,20",
+        "description": "Find large items, extract color and price.",
+        "expected": "blue,25\nred,30",
+        "hint": "Chain: grep large | cut -d',' -f1,3"
+    },
+    {
+        "text": "cpu:80:server1\nmem:45:server1\ncpu:90:server2\nmem:60:server2\ncpu:70:server3",
+        "description": "Find cpu metrics, extract server and value, sort by value.",
+        "expected": "server3:70\nserver1:80\nserver2:90",
+        "hint": "Chain: grep cpu | cut -d':' -f3,2 (reorder) | sort -t':' -k2 -n"
+    },
+    {
+        "text": "john passed math\njohn failed science\nmary passed math\nmary passed science\nbob failed math",
+        "description": "Count passes per student.",
+        "expected": "      2 mary\n      1 john",
+        "hint": "Chain: grep passed | cut -d' ' -f1 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "GET /api/users 200 150ms\nPOST /api/login 401 50ms\nGET /api/data 200 200ms\nGET /api/users 500 10ms",
+        "description": "Find successful (200) requests, count by endpoint.",
+        "expected": "      1 /api/data\n      1 /api/users",
+        "hint": "Chain: grep 200 | cut -d' ' -f2 | sort | uniq -c"
+    },
+    {
+        "text": "order1,shipped,usa\norder2,pending,uk\norder3,shipped,usa\norder4,shipped,canada\norder5,pending,usa",
+        "description": "Find shipped orders, count by country.",
+        "expected": "      2 usa\n      1 canada",
+        "hint": "Chain: grep shipped | cut -d',' -f3 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "hello world\nHELLO WORLD\nhello WORLD\nHELLO world",
+        "description": "Convert to lowercase, sort unique.",
+        "expected": "hello world",
+        "hint": "Chain: tr 'A-Z' 'a-z' | sort -u"
+    },
+    {
+        "text": "prod:app1:running\ndev:app2:stopped\nprod:app3:running\nstage:app1:running\nprod:app2:stopped",
+        "description": "Find prod running apps, extract app names.",
+        "expected": "app1\napp3",
+        "hint": "Chain: grep prod | grep running | cut -d':' -f2"
+    },
+    {
+        "text": "sensor1,25.5,normal\nsensor2,35.0,high\nsensor1,26.0,normal\nsensor3,40.5,critical\nsensor2,33.0,high",
+        "description": "Count readings per sensor, sorted.",
+        "expected": "      2 sensor1\n      2 sensor2\n      1 sensor3",
+        "hint": "Chain: cut -d',' -f1 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "file.txt 100 user1\nfile.log 250 user2\nfile.txt 150 user1\ndata.csv 300 user3",
+        "description": "Count files accessed per user.",
+        "expected": "      2 user1\n      1 user2\n      1 user3",
+        "hint": "Chain: cut -d' ' -f3 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "event1,click,homepage\nevent2,view,product\nevent3,click,cart\nevent4,click,homepage\nevent5,view,homepage",
+        "description": "Count click events by page.",
+        "expected": "      2 homepage\n      1 cart",
+        "hint": "Chain: grep click | cut -d',' -f3 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "module1:pass:5ms\nmodule2:fail:10ms\nmodule3:pass:3ms\nmodule1:pass:4ms\nmodule2:pass:8ms",
+        "description": "Find passing modules, count per module.",
+        "expected": "      2 module1\n      1 module2\n      1 module3",
+        "hint": "Chain: grep pass | cut -d':' -f1 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "user1,read,doc1\nuser2,write,doc1\nuser1,read,doc2\nuser3,read,doc1\nuser1,write,doc1",
+        "description": "Count actions per user, sorted.",
+        "expected": "      3 user1\n      1 user2\n      1 user3",
+        "hint": "Chain: cut -d',' -f1 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "region1:sales:1000\nregion2:sales:1500\nregion1:returns:100\nregion2:returns:200\nregion3:sales:800",
+        "description": "Find sales entries, extract region and amount, sort by amount.",
+        "expected": "region3:800\nregion1:1000\nregion2:1500",
+        "hint": "Chain: grep sales | cut -d':' -f1,3 | sort -t':' -k2 -n"
+    },
+    {
+        "text": "A B C\nD E F\nG H I",
+        "description": "Convert to lowercase, replace spaces with commas.",
+        "expected": "a,b,c\nd,e,f\ng,h,i",
+        "hint": "Chain: tr 'A-Z' 'a-z' | tr ' ' ','"
+    },
+    {
+        "text": "host1:22:open\nhost2:80:closed\nhost3:22:open\nhost1:80:open\nhost2:443:open",
+        "description": "Find open ports, count per host.",
+        "expected": "      2 host1\n      1 host2\n      1 host3",
+        "hint": "Chain: grep open | cut -d':' -f1 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "commit1,alice,add feature\ncommit2,bob,fix bug\ncommit3,alice,update docs\ncommit4,charlie,add test\ncommit5,alice,fix typo",
+        "description": "Count commits per author, sorted.",
+        "expected": "      3 alice\n      1 bob\n      1 charlie",
+        "hint": "Chain: cut -d',' -f2 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "10.0.0.1 allow\n192.168.1.5 deny\n10.0.0.2 allow\n172.16.0.1 deny\n10.0.0.1 deny",
+        "description": "Find denied IPs, show unique sorted.",
+        "expected": "172.16.0.1\n192.168.1.5\n10.0.0.1",
+        "hint": "Chain: grep deny | cut -d' ' -f1 | sort -u"
+    },
+    {
+        "text": "process1,high,running\nprocess2,low,stopped\nprocess3,high,running\nprocess4,medium,running\nprocess5,high,stopped",
+        "description": "Find high priority running processes.",
+        "expected": "process1,high,running\nprocess3,high,running",
+        "hint": "Chain: grep high | grep running"
+    },
+    {
+        "text": "key1=value1\nkey2=value2\nkey1=value3\nkey3=value4\nkey2=value5",
+        "description": "Extract keys, count occurrences.",
+        "expected": "      2 key1\n      2 key2\n      1 key3",
+        "hint": "Chain: cut -d'=' -f1 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "1,2,3,4,5\n6,7,8,9,10\n11,12,13,14,15",
+        "description": "Extract first and last columns.",
+        "expected": "1,5\n6,10\n11,15",
+        "hint": "Use cut -d',' -f1,5"
+    },
+    {
+        "text": "alpha beta gamma\ndelta epsilon zeta\neta theta iota",
+        "description": "Extract second word from each line, sort.",
+        "expected": "beta\nepsilon\ntheta",
+        "hint": "Chain: cut -d' ' -f2 | sort"
+    },
+    {
+        "text": "test1 PASS 100\ntest2 FAIL 85\ntest3 PASS 95\ntest4 FAIL 70\ntest5 PASS 90",
+        "description": "Count PASS and FAIL separately.",
+        "expected": "      3 PASS\n      2 FAIL",
+        "hint": "Chain: cut -d' ' -f2 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "apple,fruit,red\ncarrot,vegetable,orange\nbanana,fruit,yellow\nbroccoli,vegetable,green",
+        "description": "Find fruits, extract name and color.",
+        "expected": "apple,red\nbanana,yellow",
+        "hint": "Chain: grep fruit | cut -d',' -f1,3"
+    },
+    {
+        "text": "line one here\nline two here\nline three here\nline four here\nline five here",
+        "description": "Show lines 2-4, reversed, uppercase.",
+        "expected": "LINE FOUR HERE\nLINE THREE HERE\nLINE TWO HERE",
+        "hint": "Chain: head -4 | tail -3 | tac | tr 'a-z' 'A-Z'"
+    },
+    {
+        "text": "db1:mysql:3306:active\ndb2:postgres:5432:inactive\ndb3:mysql:3307:active\ndb4:redis:6379:active",
+        "description": "Find active databases, extract name and type.",
+        "expected": "db1:mysql\ndb3:mysql\ndb4:redis",
+        "hint": "Chain: grep active | cut -d':' -f1,2"
+    },
+    {
+        "text": "Monday 10\nTuesday 15\nWednesday 8\nThursday 20\nFriday 12",
+        "description": "Sort by number descending, show top 3 days.",
+        "expected": "Thursday 20\nTuesday 15\nFriday 12",
+        "hint": "Chain: sort -t' ' -k2 -rn | head -3"
+    }
+]

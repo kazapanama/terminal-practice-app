@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Command Practice</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Landing Page -->
+    <div id="landing-page" class="landing-page">
+        <h1 class="landing-title">Linux Command Practice</h1>
+        <p class="landing-subtitle">Master text processing commands: grep, head, tail, wc, uniq, sort, cut, and more!</p>
+        <div class="landing-buttons">
+            <button id="start-challenges-btn" class="landing-btn challenges">Challenges</button>
+            <button id="start-practice-btn" class="landing-btn practice">Practice Mode</button>
+        </div>
+        <button id="reset-progress-btn" class="reset-btn">Reset Progress</button>
+    </div>
+
+    <!-- App Page -->
+    <div id="app-page" class="app-page hidden">
+        <div class="container">
+            <div class="app-header">
+                <button id="back-btn" class="back-btn">← Back</button>
+                <h1 class="app-title">Linux Command Practice</h1>
+            </div>
+
+            <div id="challenges-mode" class="hidden">
+                <div class="difficulty-selector">
+                    <button class="difficulty-btn active" data-level="beginner">Beginner</button>
+                    <button class="difficulty-btn" data-level="intermediate">Intermediate</button>
+                    <button class="difficulty-btn" data-level="advanced">Advanced</button>
+                    <button class="difficulty-btn" data-level="expert">Expert</button>
+                    <button class="difficulty-btn" data-level="sandbox">Sandbox</button>
+                </div>
+                <div class="challenge-grid-container">
+                    <div class="challenge-grid" id="challenge-grid"></div>
+                </div>
+            </div>
+
+            <div id="practice-mode" class="hidden">
+                <div class="practice-config">
+                    <h3>Select Commands to Practice</h3>
+                    <div class="command-checkboxes" id="command-checkboxes"></div>
+                    <div class="practice-actions">
+                        <button class="generate-btn" id="generate-btn">Generate Problem</button>
+                        <button class="select-all-btn" id="select-all-btn">Select All</button>
+                        <button class="deselect-all-btn" id="deselect-all-btn">Deselect All</button>
+                    </div>
+                    <div class="practice-stats">
+                        <div class="practice-stat">
+                            <div class="label">Solved</div>
+                            <div class="value" id="solved-count">0</div>
+                        </div>
+                        <div class="practice-stat">
+                            <div class="label">Attempted</div>
+                            <div class="value" id="attempted-count">0</div>
+                        </div>
+                        <div class="practice-stat">
+                            <div class="label">Streak</div>
+                            <div class="value" id="streak-count">0</div>
+                        </div>
+                        <div class="practice-stat">
+                            <div class="label">Best Streak</div>
+                            <div class="value" id="best-streak-count">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="challenge-section">
+                <div class="challenge-header">
+                    <span class="challenge-title">
+                        <span id="challenge-mode-title">Challenge</span>
+                        <span id="challenge-counter"><span id="challenge-num">1</span>/<span id="total-challenges">5</span></span>
+                        <span class="target-command hidden" id="target-command"></span>
+                    </span>
+                    <div class="challenge-nav">
+                        <button class="nav-btn" id="prev-btn">Previous</button>
+                        <button class="nav-btn" id="next-btn">Next</button>
+                        <button class="nav-btn" id="hint-btn">Hint</button>
+                        <button class="nav-btn hidden" id="skip-btn">Skip</button>
+                        <button class="nav-btn hidden" id="show-answer-btn">Show Answer</button>
+                    </div>
+                </div>
+                <div class="challenge-description" id="challenge-desc">
+                    Loading challenge...
+                </div>
+                <div class="expected-output">
+                    <h4>Expected Output:</h4>
+                    <pre id="expected-output">...</pre>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="title">Input Text</span>
+                        <div class="stats">
+                            Lines: <span id="line-count">0</span> |
+                            Words: <span id="word-count">0</span> |
+                            Chars: <span id="char-count">0</span>
+                        </div>
+                    </div>
+                    <div class="panel-content">
+                        <div class="text-display" id="input-text"></div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="title">Output</span>
+                        <span id="output-stats" style="color: #888; font-size: 0.85rem;"></span>
+                    </div>
+                    <div class="panel-content">
+                        <div class="output-display" id="output-text"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="command-section">
+                <div class="terminal-prompt">
+                    <span class="prompt-symbol">$</span>
+                    <input type="text" class="command-input" id="command-input" placeholder="Enter your command (e.g., grep 'error' | head -5 | sort)" autocomplete="off">
+                    <button class="run-btn" id="run-btn">Run</button>
+                </div>
+                <div class="error-message" id="error-message"></div>
+            </div>
+
+            <div class="help-section">
+                <h3 class="help-title">Command Reference</h3>
+                <div class="commands-grid">
+                    <div class="command-card">
+                        <h4>grep</h4>
+                        <p>Search for patterns in text</p>
+                        <code>grep "pattern"</code><br>
+                        <code>grep -i "pattern"</code> (case-insensitive)<br>
+                        <code>grep -v "pattern"</code> (invert match)<br>
+                        <code>grep -c "pattern"</code> (count matches)<br>
+                        <code>grep -n "pattern"</code> (show line numbers)
+                    </div>
+                    <div class="command-card">
+                        <h4>head / tail</h4>
+                        <p>Show first/last lines</p>
+                        <code>head -n 5</code> or <code>head -5</code><br>
+                        <code>tail -n 3</code> or <code>tail -3</code>
+                    </div>
+                    <div class="command-card">
+                        <h4>wc</h4>
+                        <p>Count lines, words, characters</p>
+                        <code>wc</code> (all counts)<br>
+                        <code>wc -l</code> (lines only)<br>
+                        <code>wc -w</code> (words only)<br>
+                        <code>wc -c</code> (characters only)
+                    </div>
+                    <div class="command-card">
+                        <h4>sort</h4>
+                        <p>Sort lines alphabetically/numerically</p>
+                        <code>sort</code> (alphabetical)<br>
+                        <code>sort -n</code> (numeric)<br>
+                        <code>sort -r</code> (reverse)<br>
+                        <code>sort -u</code> (unique only)
+                    </div>
+                    <div class="command-card">
+                        <h4>uniq</h4>
+                        <p>Filter duplicate adjacent lines</p>
+                        <code>uniq</code> (remove duplicates)<br>
+                        <code>uniq -c</code> (count occurrences)<br>
+                        <code>uniq -d</code> (show duplicates only)
+                    </div>
+                    <div class="command-card">
+                        <h4>cut</h4>
+                        <p>Extract columns/fields from text</p>
+                        <code>cut -c1-5</code> (characters 1-5)<br>
+                        <code>cut -d',' -f2</code> (field 2, comma-delimited)<br>
+                        <code>cut -d':' -f1,3</code> (fields 1 and 3)
+                    </div>
+                    <div class="command-card">
+                        <h4>tr</h4>
+                        <p>Translate or delete characters</p>
+                        <code>tr 'a-z' 'A-Z'</code> (to uppercase)<br>
+                        <code>tr -d '0-9'</code> (delete digits)<br>
+                        <code>tr -s ' '</code> (squeeze spaces)
+                    </div>
+                    <div class="command-card">
+                        <h4>cat</h4>
+                        <p>Display or concatenate text</p>
+                        <code>cat</code> (pass through)<br>
+                        <code>cat -n</code> (number lines)
+                    </div>
+                    <div class="command-card">
+                        <h4>rev</h4>
+                        <p>Reverse each line</p>
+                        <code>rev</code>
+                    </div>
+                    <div class="command-card">
+                        <h4>tac</h4>
+                        <p>Reverse line order</p>
+                        <code>tac</code>
+                    </div>
+                    <div class="command-card">
+                        <h4>sed</h4>
+                        <p>Stream editor for substitution</p>
+                        <code>sed 's/old/new/'</code> (first match)<br>
+                        <code>sed 's/old/new/g'</code> (all matches)
+                    </div>
+                    <div class="command-card">
+                        <h4>Pipes</h4>
+                        <p>Chain commands together</p>
+                        <code>cmd1 | cmd2 | cmd3</code><br>
+                        Example: <code>sort | uniq -c | sort -rn</code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="success-message" id="success-message">
+                Correct! Great job!
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

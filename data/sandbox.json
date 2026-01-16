@@ -1,0 +1,20 @@
+[
+    {
+        "text": "Line 1: Hello World\nLine 2: Testing 123\nLine 3: foo bar baz\nLine 4: UPPERCASE text\nLine 5: mixed CASE here\nLine 6: numbers 456 789\nLine 7: special!@#chars\nLine 8: tabs\tand\tspaces\nLine 9: the end\nLine 10: final line",
+        "description": "Sandbox mode - experiment freely with any commands! Try combining multiple commands with pipes.",
+        "expected": null,
+        "hint": "Try commands like: grep, head, tail, sort, uniq, cut, wc, tr, sed, rev, tac"
+    },
+    {
+        "text": "name,department,salary,years\nalice,engineering,75000,3\nbob,marketing,55000,5\ncharlie,engineering,82000,7\ndiana,sales,60000,2\neve,engineering,90000,10\nfrank,marketing,52000,1\ngrace,sales,65000,4",
+        "description": "Sandbox mode - Practice with CSV data! Extract fields, filter, sort, and analyze.",
+        "expected": null,
+        "hint": "Try: cut -d',' -f1,3 | sort -t',' -k2 -n"
+    },
+    {
+        "text": "2024-01-15 08:30:15 INFO Application started\n2024-01-15 08:30:16 DEBUG Loading configuration\n2024-01-15 08:31:00 INFO User john logged in\n2024-01-15 08:35:22 WARNING Memory usage high\n2024-01-15 08:40:10 ERROR Database connection failed\n2024-01-15 08:40:15 INFO Retrying connection\n2024-01-15 08:40:20 INFO Database connected\n2024-01-15 09:00:00 INFO User jane logged in\n2024-01-15 09:15:30 ERROR File not found: config.yaml\n2024-01-15 09:20:00 INFO Application shutdown",
+        "description": "Sandbox mode - Analyze log files! Filter by level, extract timestamps, count occurrences.",
+        "expected": null,
+        "hint": "Try: grep ERROR | cut -d' ' -f1,2 or grep -c INFO"
+    }
+]
