@@ -6,22 +6,10 @@
         "hint": "Use the head command with -n or just a number"
     },
     {
-        "text": "error: file not found\ninfo: starting process\nerror: connection failed\ndebug: checking status\nerror: timeout occurred\ninfo: process complete",
-        "description": "Find all lines containing 'error'.",
-        "expected": "error: file not found\nerror: connection failed\nerror: timeout occurred",
-        "hint": "Use grep with the pattern 'error'"
-    },
-    {
-        "text": "banana\napple\ncherry\napple\ndate\nbanana\napple",
-        "description": "Sort these fruits alphabetically.",
-        "expected": "apple\napple\napple\nbanana\nbanana\ncherry\ndate",
-        "hint": "Use the sort command"
-    },
-    {
-        "text": "hello world\nthis is a test\nlinux commands are fun\npractice makes perfect",
-        "description": "Count the total number of lines.",
-        "expected": "4",
-        "hint": "Use wc with the -l flag"
+        "text": "line1\nline2\nline3\nline4\nline5\nline6\nline7\nline8\nline9\nline10",
+        "description": "Show the first 5 lines.",
+        "expected": "line1\nline2\nline3\nline4\nline5",
+        "hint": "Use head -5"
     },
     {
         "text": "one\ntwo\nthree\nfour\nfive\nsix\nseven",
@@ -30,112 +18,16 @@
         "hint": "Use the tail command with -n or a number"
     },
     {
-        "text": "red\nblue\ngreen\nyellow\norange\npurple\npink",
-        "description": "Show only the first 4 lines.",
-        "expected": "red\nblue\ngreen\nyellow",
-        "hint": "Use head -4"
-    },
-    {
-        "text": "cat\ndog\nbird\nfish\ncat\ndog\nrabbit",
-        "description": "Sort these animals alphabetically.",
-        "expected": "bird\ncat\ncat\ndog\ndog\nfish\nrabbit",
-        "hint": "Use the sort command"
-    },
-    {
-        "text": "INFO: System started\nWARNING: Low memory\nINFO: User login\nERROR: Disk full\nINFO: Backup done",
-        "description": "Find all lines containing 'INFO'.",
-        "expected": "INFO: System started\nINFO: User login\nINFO: Backup done",
-        "hint": "Use grep INFO"
-    },
-    {
-        "text": "monday\ntuesday\nwednesday\nthursday\nfriday\nsaturday\nsunday",
-        "description": "Display the last 2 lines.",
-        "expected": "saturday\nsunday",
-        "hint": "Use tail -2"
-    },
-    {
-        "text": "one two three\nfour five six\nseven eight nine",
-        "description": "Count the total number of words.",
-        "expected": "9",
-        "hint": "Use wc with the -w flag"
-    },
-    {
-        "text": "zebra\napple\nmango\nbanana\ncherry",
-        "description": "Sort these words alphabetically.",
-        "expected": "apple\nbanana\ncherry\nmango\nzebra",
-        "hint": "Use sort"
-    },
-    {
-        "text": "server1 online\nserver2 offline\nserver3 online\nserver4 offline\nserver5 online",
-        "description": "Find all lines containing 'offline'.",
-        "expected": "server2 offline\nserver4 offline",
-        "hint": "Use grep offline"
-    },
-    {
-        "text": "line1\nline2\nline3\nline4\nline5\nline6\nline7\nline8\nline9\nline10",
-        "description": "Show the first 5 lines.",
-        "expected": "line1\nline2\nline3\nline4\nline5",
-        "hint": "Use head -5"
-    },
-    {
-        "text": "alpha\nbeta\ngamma\ndelta\nepsilon",
-        "description": "Display the last 3 lines.",
-        "expected": "gamma\ndelta\nepsilon",
-        "hint": "Use tail -3"
-    },
-    {
-        "text": "The quick brown fox\njumps over\nthe lazy dog",
-        "description": "Count the number of lines.",
-        "expected": "3",
-        "hint": "Use wc -l"
-    },
-    {
-        "text": "peach\napricot\nplum\npear\npapaya",
-        "description": "Find all lines containing the letter 'p'.",
-        "expected": "peach\napricot\nplum\npear\npapaya",
-        "hint": "Use grep p"
-    },
-    {
-        "text": "dog\ncat\nant\nbee\nape",
-        "description": "Sort these animals alphabetically.",
-        "expected": "ant\nape\nbee\ncat\ndog",
-        "hint": "Use sort"
-    },
-    {
-        "text": "first\nsecond\nthird\nfourth\nfifth\nsixth",
-        "description": "Show only the first 2 lines.",
-        "expected": "first\nsecond",
-        "hint": "Use head -2"
-    },
-    {
-        "text": "ERROR: connection lost\nDEBUG: retrying\nERROR: timeout\nINFO: connected\nERROR: failed",
-        "description": "Find all lines containing 'ERROR'.",
-        "expected": "ERROR: connection lost\nERROR: timeout\nERROR: failed",
-        "hint": "Use grep ERROR"
-    },
-    {
         "text": "january\nfebruary\nmarch\napril\nmay\njune",
         "description": "Display the last 4 lines.",
         "expected": "march\napril\nmay\njune",
         "hint": "Use tail -4"
     },
     {
-        "text": "hello world\ngoodbye world\nhello there\ngoodbye friend",
-        "description": "Find all lines containing 'hello'.",
-        "expected": "hello world\nhello there",
-        "hint": "Use grep hello"
-    },
-    {
-        "text": "5\n3\n8\n1\n9\n2\n7",
-        "description": "Sort these numbers in numeric order.",
-        "expected": "1\n2\n3\n5\n7\n8\n9",
-        "hint": "Use sort -n for numeric sorting"
-    },
-    {
-        "text": "abc\ndef\nghi\njkl\nmno\npqr\nstu\nvwx",
-        "description": "Show the first 3 lines.",
-        "expected": "abc\ndef\nghi",
-        "hint": "Use head -3"
+        "text": "error: file not found\ninfo: starting process\nerror: connection failed\ndebug: checking status\nerror: timeout occurred\ninfo: process complete",
+        "description": "Find all lines containing 'error'.",
+        "expected": "error: file not found\nerror: connection failed\nerror: timeout occurred",
+        "hint": "Use grep with the pattern 'error'"
     },
     {
         "text": "user: alice logged in\nuser: bob logged out\nuser: alice logged out\nuser: charlie logged in",
@@ -144,46 +36,22 @@
         "hint": "Use grep 'logged in'"
     },
     {
-        "text": "red apple\ngreen apple\nred banana\nyellow banana\ngreen grape",
-        "description": "Find all lines containing 'red'.",
-        "expected": "red apple\nred banana",
-        "hint": "Use grep red"
+        "text": "banana\napple\ncherry\napple\ndate\nbanana\napple",
+        "description": "Sort these fruits alphabetically.",
+        "expected": "apple\napple\napple\nbanana\nbanana\ncherry\ndate",
+        "hint": "Use the sort command"
     },
     {
-        "text": "10\n5\n20\n15\n25\n30",
-        "description": "Sort these numbers numerically.",
-        "expected": "5\n10\n15\n20\n25\n30",
-        "hint": "Use sort -n"
-    },
-    {
-        "text": "file1.txt\nfile2.txt\nfile3.txt\nfile4.txt\nfile5.txt",
-        "description": "Display the last 2 lines.",
-        "expected": "file4.txt\nfile5.txt",
-        "hint": "Use tail -2"
-    },
-    {
-        "text": "north\nsouth\neast\nwest",
-        "description": "Sort these directions alphabetically.",
-        "expected": "east\nnorth\nsouth\nwest",
+        "text": "zebra\napple\nmango\nbanana\ncherry",
+        "description": "Sort these words alphabetically.",
+        "expected": "apple\nbanana\ncherry\nmango\nzebra",
         "hint": "Use sort"
     },
     {
-        "text": "linux is great\nwindows is okay\nlinux is powerful\nmac is nice\nlinux rocks",
-        "description": "Find all lines containing 'linux'.",
-        "expected": "linux is great\nlinux is powerful\nlinux rocks",
-        "hint": "Use grep linux"
-    },
-    {
-        "text": "a\nb\nc\nd\ne\nf\ng\nh\ni\nj",
-        "description": "Show the first 6 lines.",
-        "expected": "a\nb\nc\nd\ne\nf",
-        "hint": "Use head -6"
-    },
-    {
-        "text": "success: task completed\nfailure: task failed\nsuccess: upload done\nfailure: download error",
-        "description": "Find all lines containing 'success'.",
-        "expected": "success: task completed\nsuccess: upload done",
-        "hint": "Use grep success"
+        "text": "5\n3\n8\n1\n9\n2\n7",
+        "description": "Sort these numbers in numeric order.",
+        "expected": "1\n2\n3\n5\n7\n8\n9",
+        "hint": "Use sort -n for numeric sorting"
     },
     {
         "text": "100\n50\n200\n75\n150",
@@ -192,111 +60,15 @@
         "hint": "Use sort -n"
     },
     {
-        "text": "spring\nsummer\nautumn\nwinter",
-        "description": "Count the number of lines.",
+        "text": "hello world\nthis is a test\nlinux commands are fun\npractice makes perfect",
+        "description": "Count the total number of lines.",
         "expected": "4",
-        "hint": "Use wc -l"
+        "hint": "Use wc with the -l flag"
     },
     {
-        "text": "data1\ndata2\ndata3\ndata4\ndata5\ndata6\ndata7",
-        "description": "Display the last 5 lines.",
-        "expected": "data3\ndata4\ndata5\ndata6\ndata7",
-        "hint": "Use tail -5"
-    },
-    {
-        "text": "buy milk\nbuy eggs\nsell car\nbuy bread\nsell bike",
-        "description": "Find all lines containing 'buy'.",
-        "expected": "buy milk\nbuy eggs\nbuy bread",
-        "hint": "Use grep buy"
-    },
-    {
-        "text": "orange\nlemon\nlime\ngrapefruit\ntangerine",
-        "description": "Sort these citrus fruits alphabetically.",
-        "expected": "grapefruit\nlemon\nlime\norange\ntangerine",
-        "hint": "Use sort"
-    },
-    {
-        "text": "row1\nrow2\nrow3\nrow4\nrow5\nrow6\nrow7\nrow8",
-        "description": "Show the first 4 lines.",
-        "expected": "row1\nrow2\nrow3\nrow4",
-        "hint": "Use head -4"
-    },
-    {
-        "text": "test passed\ntest failed\ntest passed\ntest skipped\ntest passed",
-        "description": "Find all lines containing 'passed'.",
-        "expected": "test passed\ntest passed\ntest passed",
-        "hint": "Use grep passed"
-    },
-    {
-        "text": "42\n17\n88\n3\n56\n91",
-        "description": "Sort these numbers numerically.",
-        "expected": "3\n17\n42\n56\n88\n91",
-        "hint": "Use sort -n"
-    },
-    {
-        "text": "chapter1\nchapter2\nchapter3\nchapter4\nchapter5",
-        "description": "Display the last 3 lines.",
-        "expected": "chapter3\nchapter4\nchapter5",
-        "hint": "Use tail -3"
-    },
-    {
-        "text": "GET /index.html\nPOST /login\nGET /about.html\nGET /contact.html\nPOST /submit",
-        "description": "Find all lines containing 'GET'.",
-        "expected": "GET /index.html\nGET /about.html\nGET /contact.html",
-        "hint": "Use grep GET"
-    },
-    {
-        "text": "word1 word2\nword3 word4 word5\nword6",
+        "text": "one two three\nfour five six\nseven eight nine",
         "description": "Count the total number of words.",
-        "expected": "6",
-        "hint": "Use wc -w"
-    },
-    {
-        "text": "zinc\naluminum\ncopper\niron\ngold",
-        "description": "Sort these metals alphabetically.",
-        "expected": "aluminum\ncopper\ngold\niron\nzinc",
-        "hint": "Use sort"
-    },
-    {
-        "text": "item1\nitem2\nitem3\nitem4\nitem5\nitem6\nitem7\nitem8\nitem9",
-        "description": "Show the first 7 lines.",
-        "expected": "item1\nitem2\nitem3\nitem4\nitem5\nitem6\nitem7",
-        "hint": "Use head -7"
-    },
-    {
-        "text": "status: active\nstatus: inactive\nstatus: active\nstatus: pending\nstatus: active",
-        "description": "Find all lines containing 'active'.",
-        "expected": "status: active\nstatus: inactive\nstatus: active\nstatus: active",
-        "hint": "Use grep active"
-    },
-    {
-        "text": "999\n1\n500\n250\n750",
-        "description": "Sort these numbers numerically.",
-        "expected": "1\n250\n500\n750\n999",
-        "hint": "Use sort -n"
-    },
-    {
-        "text": "alpha\nbeta\ngamma\ndelta\nepsilon\nzeta\neta\ntheta",
-        "description": "Display the last 4 lines.",
-        "expected": "epsilon\nzeta\neta\ntheta",
-        "hint": "Use tail -4"
-    },
-    {
-        "text": "email from john\nemail from mary\nmessage from bob\nemail from alice\nmessage from tom",
-        "description": "Find all lines containing 'email'.",
-        "expected": "email from john\nemail from mary\nemail from alice",
-        "hint": "Use grep email"
-    },
-    {
-        "text": "this is line one\nthis is line two\nthis is line three",
-        "description": "Count the number of lines.",
-        "expected": "3",
-        "hint": "Use wc -l"
-    },
-    {
-        "text": "piano\nviolin\nguitar\ndrums\nflute\ntrumpet",
-        "description": "Sort these instruments alphabetically.",
-        "expected": "drums\nflute\nguitar\npiano\ntrumpet\nviolin",
-        "hint": "Use sort"
+        "expected": "9",
+        "hint": "Use wc with the -w flag"
     }
 ]

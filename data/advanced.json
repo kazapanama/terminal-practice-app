@@ -6,10 +6,10 @@
         "hint": "Chain: sort | uniq -c"
     },
     {
-        "text": "user1:x:1001:1001:User One:/home/user1:/bin/bash\nuser2:x:1002:1002:User Two:/home/user2:/bin/sh\nroot:x:0:0:Root:/root:/bin/bash",
-        "description": "Extract the username and shell (fields 1 and 7).",
-        "expected": "user1:/bin/bash\nuser2:/bin/sh\nroot:/bin/bash",
-        "hint": "Use cut -d':' -f1,7"
+        "text": "apple\norange\napple\nbanana\norange\napple",
+        "description": "Sort and count, then sort by count descending.",
+        "expected": "      3 apple\n      2 orange\n      1 banana",
+        "hint": "Chain: sort | uniq -c | sort -rn"
     },
     {
         "text": "The quick brown fox\njumps over the lazy dog\nPack my box with five\ndozen liquor jugs",
@@ -18,70 +18,16 @@
         "hint": "Use the tac command"
     },
     {
-        "text": "10\n25\n5\n100\n50\n75\n30",
-        "description": "Sort numerically descending and show only the top 3.",
-        "expected": "100\n75\n50",
-        "hint": "Chain: sort -rn | head -3"
-    },
-    {
-        "text": "hello world\ngoodbye world\nhello there",
-        "description": "Convert all text to uppercase.",
-        "expected": "HELLO WORLD\nGOODBYE WORLD\nHELLO THERE",
-        "hint": "Use tr 'a-z' 'A-Z'"
-    },
-    {
         "text": "cat\ndog\nbird\nfish\nelephant",
         "description": "Reverse each line (characters in reverse order).",
         "expected": "tac\ngod\ndrib\nhsif\tnahpele",
         "hint": "Use the rev command"
     },
     {
-        "text": "apple\nbanana\ncherry\ndate\nelderberry",
-        "description": "Replace 'apple' with 'FRUIT' in each line.",
-        "expected": "FRUIT\nbanana\ncherry\ndate\nelderberry",
-        "hint": "Use sed 's/apple/FRUIT/g'"
-    },
-    {
-        "text": "ERROR: fail\nINFO: start\nERROR: crash\nDEBUG: test\nERROR: stop",
-        "description": "Find ERROR lines and show line numbers.",
-        "expected": "1:ERROR: fail\n3:ERROR: crash\n5:ERROR: stop",
-        "hint": "Use grep -n ERROR"
-    },
-    {
-        "text": "one\ntwo\nthree\nfour\nfive",
-        "description": "Show lines in reverse order.",
-        "expected": "five\nfour\nthree\ntwo\none",
-        "hint": "Use tac"
-    },
-    {
-        "text": "HELLO WORLD\nGOODBYE FRIEND\nTEST MESSAGE",
-        "description": "Convert all text to lowercase.",
-        "expected": "hello world\ngoodbye friend\ntest message",
-        "hint": "Use tr 'A-Z' 'a-z'"
-    },
-    {
-        "text": "cat\ndog\ncat\nbird\ndog\ncat\nfish",
-        "description": "Sort, remove duplicates, and count each.",
-        "expected": "      1 bird\n      3 cat\n      2 dog\n      1 fish",
-        "hint": "Chain: sort | uniq -c"
-    },
-    {
-        "text": "hello 123\nworld 456\ntest 789",
-        "description": "Delete all digits from the text.",
-        "expected": "hello \nworld \ntest ",
-        "hint": "Use tr -d '0-9'"
-    },
-    {
-        "text": "first line\nsecond line\nthird line\nfourth line",
-        "description": "Show the last 2 lines in reverse order.",
-        "expected": "fourth line\nthird line",
-        "hint": "Chain: tail -2 | tac"
-    },
-    {
-        "text": "foo bar baz\nhello world\nfoo test foo",
-        "description": "Replace all 'foo' with 'FOO'.",
-        "expected": "FOO bar baz\nhello world\nFOO test FOO",
-        "hint": "Use sed 's/foo/FOO/g'"
+        "text": "10\n25\n5\n100\n50\n75\n30",
+        "description": "Sort numerically descending and show only the top 3.",
+        "expected": "100\n75\n50",
+        "hint": "Chain: sort -rn | head -3"
     },
     {
         "text": "100\n50\n200\n75\n150\n25",
@@ -90,100 +36,34 @@
         "hint": "Chain: sort -n | head -3"
     },
     {
-        "text": "abc\ndef\nghi",
-        "description": "Reverse each line.",
-        "expected": "cba\nfed\nihg",
-        "hint": "Use rev"
+        "text": "hello world\ngoodbye world\nhello there",
+        "description": "Convert all text to uppercase.",
+        "expected": "HELLO WORLD\nGOODBYE WORLD\nHELLO THERE",
+        "hint": "Use tr 'a-z' 'A-Z'"
     },
     {
-        "text": "name,dept,salary\nalice,eng,75000\nbob,sales,60000\ncharlie,eng,80000",
-        "description": "Extract dept column and sort unique values.",
-        "expected": "dept\neng\nsales",
-        "hint": "Chain: cut -d',' -f2 | sort -u"
+        "text": "HELLO WORLD\nGOODBYE FRIEND\nTEST MESSAGE",
+        "description": "Convert all text to lowercase.",
+        "expected": "hello world\ngoodbye friend\ntest message",
+        "hint": "Use tr 'A-Z' 'a-z'"
     },
     {
-        "text": "INFO: started\nWARN: memory\nINFO: running\nERROR: failed\nINFO: done",
-        "description": "Count INFO lines.",
-        "expected": "3",
-        "hint": "Use grep -c INFO"
+        "text": "apple\nbanana\ncherry\ndate\nelderberry",
+        "description": "Replace 'apple' with 'FRUIT' in each line.",
+        "expected": "FRUIT\nbanana\ncherry\ndate\nelderberry",
+        "hint": "Use sed 's/apple/FRUIT/g'"
     },
     {
-        "text": "red\ngreen\nblue\nyellow\npurple",
-        "description": "Show lines in reverse order and take first 3.",
-        "expected": "purple\nyellow\nblue",
-        "hint": "Chain: tac | head -3"
+        "text": "foo bar baz\nhello world\nfoo test foo",
+        "description": "Replace all 'foo' with 'FOO'.",
+        "expected": "FOO bar baz\nhello world\nFOO test FOO",
+        "hint": "Use sed 's/foo/FOO/g'"
     },
     {
-        "text": "hello world\ntest string\nsample text",
-        "description": "Replace spaces with underscores.",
-        "expected": "hello_world\ntest_string\nsample_text",
-        "hint": "Use tr ' ' '_'"
-    },
-    {
-        "text": "apple\norange\napple\nbanana\norange\napple",
-        "description": "Sort and count, then sort by count descending.",
-        "expected": "      3 apple\n      2 orange\n      1 banana",
-        "hint": "Chain: sort | uniq -c | sort -rn"
-    },
-    {
-        "text": "Line One\nLine Two\nLine Three",
-        "description": "Show with line numbers.",
-        "expected": "     1\tLine One\n     2\tLine Two\n     3\tLine Three",
-        "hint": "Use cat -n"
-    },
-    {
-        "text": "123abc456\n789def012\n345ghi678",
-        "description": "Delete all letters, keep only digits.",
-        "expected": "123456\n789012\n345678",
-        "hint": "Use tr -d 'a-z'"
-    },
-    {
-        "text": "error in module A\nwarning in module B\nerror in module C\ninfo in module D",
-        "description": "Find 'error' lines with line numbers.",
-        "expected": "1:error in module A\n3:error in module C",
-        "hint": "Use grep -n error"
-    },
-    {
-        "text": "word\nsentence\nletter\ncharacter",
-        "description": "Reverse each line.",
-        "expected": "drow\necnetnes\nrettel\nretcarahc",
-        "hint": "Use rev"
-    },
-    {
-        "text": "server1,active,100\nserver2,inactive,0\nserver3,active,75",
-        "description": "Extract server and status, then grep active.",
-        "expected": "server1,active\nserver3,active",
-        "hint": "Chain: cut -d',' -f1,2 | grep active"
-    },
-    {
-        "text": "one\ntwo\nthree\nfour\nfive\nsix\nseven",
-        "description": "Show last 4 lines in reverse order.",
-        "expected": "seven\nsix\nfive\nfour",
-        "hint": "Chain: tail -4 | tac"
-    },
-    {
-        "text": "Hello World\nHello There\nGoodbye World",
-        "description": "Replace 'Hello' with 'Hi'.",
-        "expected": "Hi World\nHi There\nGoodbye World",
-        "hint": "Use sed 's/Hello/Hi/g'"
-    },
-    {
-        "text": "a b c d e\nf g h i j\nk l m n o",
-        "description": "Replace spaces with newlines (one letter per line).",
-        "expected": "a\nb\nc\nd\ne\nf\ng\nh\ni\nj\nk\nl\nm\nn\no",
-        "hint": "Use tr ' ' '\\n'"
-    },
-    {
-        "text": "50\n30\n90\n10\n70\n40",
-        "description": "Sort numerically ascending and show top 4.",
-        "expected": "10\n30\n40\n50",
-        "hint": "Chain: sort -n | head -4"
-    },
-    {
-        "text": "alpha\nbeta\ngamma",
-        "description": "Reverse lines then reverse characters.",
-        "expected": "ammag\nateb\nahpla",
-        "hint": "Chain: tac | rev"
+        "text": "ERROR: fail\nINFO: start\nERROR: crash\nDEBUG: test\nERROR: stop",
+        "description": "Find ERROR lines and show line numbers.",
+        "expected": "1:ERROR: fail\n3:ERROR: crash\n5:ERROR: stop",
+        "hint": "Use grep -n ERROR"
     },
     {
         "text": "test.txt\ndata.csv\ntest.log\ninfo.txt\ntest.md",
@@ -192,94 +72,58 @@
         "hint": "Use grep -c test"
     },
     {
-        "text": "apple:red:5\nbanana:yellow:3\ncherry:red:8\ngrape:purple:2",
-        "description": "Extract fruit and count (fields 1 and 3).",
-        "expected": "apple:5\nbanana:3\ncherry:8\ngrape:2",
-        "hint": "Use cut -d':' -f1,3"
+        "text": "hello 123\nworld 456\ntest 789",
+        "description": "Delete all digits from the text.",
+        "expected": "hello \nworld \ntest ",
+        "hint": "Use tr -d '0-9'"
     },
     {
-        "text": "foo\nbar\nbaz\nfoo\nbar\nfoo",
-        "description": "Sort, count, and show most frequent first.",
-        "expected": "      3 foo\n      2 bar\n      1 baz",
-        "hint": "Chain: sort | uniq -c | sort -rn"
+        "text": "123abc456\n789def012\n345ghi678",
+        "description": "Delete all letters, keep only digits.",
+        "expected": "123456\n789012\n345678",
+        "hint": "Use tr -d 'a-z'"
     },
     {
-        "text": "MixedCase\nUPPERCASE\nlowercase",
-        "description": "Convert everything to uppercase.",
-        "expected": "MIXEDCASE\nUPPERCASE\nLOWERCASE",
-        "hint": "Use tr 'a-z' 'A-Z'"
+        "text": "first line\nsecond line\nthird line\nfourth line",
+        "description": "Show the last 2 lines in reverse order.",
+        "expected": "fourth line\nthird line",
+        "hint": "Chain: tail -2 | tac"
     },
     {
-        "text": "line1\nline2\nline3\nline4\nline5",
-        "description": "Show middle 3 lines (skip first and last).",
-        "expected": "line2\nline3\nline4",
-        "hint": "Chain: tail -4 | head -3"
+        "text": "red\ngreen\nblue\nyellow\npurple",
+        "description": "Show lines in reverse order and take first 3.",
+        "expected": "purple\nyellow\nblue",
+        "hint": "Chain: tac | head -3"
     },
     {
-        "text": "old text here\nold value there\nnew stuff here",
-        "description": "Replace 'old' with 'new'.",
-        "expected": "new text here\nnew value there\nnew stuff here",
-        "hint": "Use sed 's/old/new/g'"
+        "text": "name,dept,salary\nalice,eng,75000\nbob,sales,60000\ncharlie,eng,80000",
+        "description": "Extract dept column and sort unique values.",
+        "expected": "dept\neng\nsales",
+        "hint": "Chain: cut -d',' -f2 | sort -u"
+    },
+    {
+        "text": "Line One\nLine Two\nLine Three",
+        "description": "Show with line numbers.",
+        "expected": "     1\tLine One\n     2\tLine Two\n     3\tLine Three",
+        "hint": "Use cat -n"
+    },
+    {
+        "text": "hello world\ntest string\nsample text",
+        "description": "Replace spaces with underscores.",
+        "expected": "hello_world\ntest_string\nsample_text",
+        "hint": "Use tr ' ' '_'"
+    },
+    {
+        "text": "a b c d e\nf g h i j\nk l m n o",
+        "description": "Replace spaces with newlines (one letter per line).",
+        "expected": "a\nb\nc\nd\ne\nf\ng\nh\ni\nj\nk\nl\nm\nn\no",
+        "hint": "Use tr ' ' '\\n'"
     },
     {
         "text": "DEBUG: start\nINFO: process\nDEBUG: check\nERROR: fail\nDEBUG: end",
         "description": "Find lines NOT containing DEBUG.",
         "expected": "INFO: process\nERROR: fail",
         "hint": "Use grep -v DEBUG"
-    },
-    {
-        "text": "stressed\nlevel\nrotor\nhello",
-        "description": "Reverse each line.",
-        "expected": "desserts\nlevel\nrotor\nolleh",
-        "hint": "Use rev"
-    },
-    {
-        "text": "user1,admin,active\nuser2,guest,inactive\nuser3,admin,active\nuser4,guest,active",
-        "description": "Find active admin users.",
-        "expected": "user1,admin,active\nuser3,admin,active",
-        "hint": "Use grep admin | grep active or grep 'admin,active'"
-    },
-    {
-        "text": "999\n111\n555\n333\n777",
-        "description": "Sort numerically descending.",
-        "expected": "999\n777\n555\n333\n111",
-        "hint": "Use sort -rn"
-    },
-    {
-        "text": "tab\tseparated\ttext\nmore\ttabs\there",
-        "description": "Replace tabs with spaces.",
-        "expected": "tab separated text\nmore tabs here",
-        "hint": "Use tr '\\t' ' '"
-    },
-    {
-        "text": "192.168.1.1\n10.0.0.1\n192.168.1.2\n172.16.0.1\n192.168.1.3",
-        "description": "Find lines starting with 192 and count.",
-        "expected": "3",
-        "hint": "Use grep -c ^192"
-    },
-    {
-        "text": "first\nsecond\nthird\nfourth\nfifth",
-        "description": "Reverse order and show first 2.",
-        "expected": "fifth\nfourth",
-        "hint": "Chain: tac | head -2"
-    },
-    {
-        "text": "hello world\nhello there\nhi world\nhello friend",
-        "description": "Replace 'hello' with 'hey'.",
-        "expected": "hey world\nhey there\nhi world\nhey friend",
-        "hint": "Use sed 's/hello/hey/g'"
-    },
-    {
-        "text": "cat\ndog\nelephant\nant\nbear",
-        "description": "Sort by line length (shortest first using awk or sort).",
-        "expected": "ant\ncat\ndog\nbear\nelephant",
-        "hint": "This requires sort, try sorting alphabetically first"
-    },
-    {
-        "text": "ERROR: disk\nWARN: memory\nERROR: network\nINFO: ok\nERROR: cpu",
-        "description": "Find ERROR lines with line numbers.",
-        "expected": "1:ERROR: disk\n3:ERROR: network\n5:ERROR: cpu",
-        "hint": "Use grep -n ERROR"
     },
     {
         "text": "a\nb\nc\nd\ne\nf\ng\nh",
@@ -294,9 +138,33 @@
         "hint": "Use tr ':' ','"
     },
     {
-        "text": "x\ny\nz\nx\ny\nx\nz\nx",
-        "description": "Sort, count, and sort by count descending.",
-        "expected": "      4 x\n      2 y\n      2 z",
-        "hint": "Chain: sort | uniq -c | sort -rn"
+        "text": "tab\tseparated\ttext\nmore\ttabs\there",
+        "description": "Replace tabs with spaces.",
+        "expected": "tab separated text\nmore tabs here",
+        "hint": "Use tr '\\t' ' '"
+    },
+    {
+        "text": "192.168.1.1\n10.0.0.1\n192.168.1.2\n172.16.0.1\n192.168.1.3",
+        "description": "Find lines starting with 192 and count.",
+        "expected": "3",
+        "hint": "Use grep -c ^192"
+    },
+    {
+        "text": "user1,admin,active\nuser2,guest,inactive\nuser3,admin,active\nuser4,guest,active",
+        "description": "Find active admin users.",
+        "expected": "user1,admin,active\nuser3,admin,active",
+        "hint": "Use grep admin | grep active or grep 'admin,active'"
+    },
+    {
+        "text": "server1,active,100\nserver2,inactive,0\nserver3,active,75",
+        "description": "Extract server and status, then grep active.",
+        "expected": "server1,active\nserver3,active",
+        "hint": "Chain: cut -d',' -f1,2 | grep active"
+    },
+    {
+        "text": "alpha\nbeta\ngamma",
+        "description": "Reverse lines then reverse characters.",
+        "expected": "ammag\nateb\nahpla",
+        "hint": "Chain: tac | rev"
     }
 ]

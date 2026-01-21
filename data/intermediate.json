@@ -6,64 +6,10 @@
         "hint": "Use the uniq command"
     },
     {
-        "text": "john,25,engineer\nmary,30,designer\nbob,22,developer\nalice,28,manager\ncharlie,35,analyst",
-        "description": "Extract only the names (first column) from this CSV data.",
-        "expected": "john\nmary\nbob\nalice\ncharlie",
-        "hint": "Use cut with -d',' and -f1"
-    },
-    {
-        "text": "ERROR: disk full\nWARNING: low memory\nERROR: network down\nINFO: backup complete\nERROR: process failed\nWARNING: high CPU",
-        "description": "Count how many ERROR lines there are.",
-        "expected": "3",
-        "hint": "Use grep with -c flag to count matches"
-    },
-    {
-        "text": "5\n3\n8\n1\n9\n2\n7",
-        "description": "Sort these numbers in reverse numeric order (highest first).",
-        "expected": "9\n8\n7\n5\n3\n2\n1",
-        "hint": "Use sort with -rn flags"
-    },
-    {
-        "text": "Hello World\nLINUX COMMANDS\nPractice Daily\nUPPERCASE TEXT\nmixed Case Here",
-        "description": "Find all lines containing 'linux' (case-insensitive).",
-        "expected": "LINUX COMMANDS",
-        "hint": "Use grep with -i flag for case-insensitive search"
-    },
-    {
-        "text": "alice,engineering,75000\nbob,marketing,55000\ncharlie,engineering,82000\ndiana,sales,60000\neve,engineering,90000",
-        "description": "Extract only the department (second column).",
-        "expected": "engineering\nmarketing\nengineering\nsales\nengineering",
-        "hint": "Use cut -d',' -f2"
-    },
-    {
         "text": "cat\ncat\ncat\ndog\ndog\nbird\nfish\nfish\nfish\nfish",
         "description": "Count occurrences of each unique adjacent line.",
         "expected": "      3 cat\n      2 dog\n      1 bird\n      4 fish",
         "hint": "Use uniq -c"
-    },
-    {
-        "text": "ERROR: file not found\nDEBUG: loading config\nERROR: permission denied\nINFO: started\nDEBUG: checking",
-        "description": "Find all lines that do NOT contain 'DEBUG'.",
-        "expected": "ERROR: file not found\nERROR: permission denied\nINFO: started",
-        "hint": "Use grep -v to invert the match"
-    },
-    {
-        "text": "100\n25\n50\n75\n200\n150",
-        "description": "Sort numerically in descending order.",
-        "expected": "200\n150\n100\n75\n50\n25",
-        "hint": "Use sort -rn"
-    },
-    {
-        "text": "user1:password1:1001:1001\nuser2:password2:1002:1002\nuser3:password3:1003:1003",
-        "description": "Extract the username and UID (fields 1 and 3) using colon as delimiter.",
-        "expected": "user1:1001\nuser2:1002\nuser3:1003",
-        "hint": "Use cut -d':' -f1,3"
-    },
-    {
-        "text": "Apple\napple\nAPPLE\nBanana\nbanana",
-        "description": "Find all lines containing 'apple' (case-insensitive).",
-        "expected": "Apple\napple\nAPPLE",
-        "hint": "Use grep -i apple"
     },
     {
         "text": "red\nred\nblue\ngreen\ngreen\ngreen\nyellow",
@@ -72,130 +18,22 @@
         "hint": "Use uniq -d"
     },
     {
-        "text": "name,age,city\nalice,25,london\nbob,30,paris\ncharlie,22,tokyo",
-        "description": "Extract names and cities (fields 1 and 3).",
-        "expected": "name,city\nalice,london\nbob,paris\ncharlie,tokyo",
-        "hint": "Use cut -d',' -f1,3"
-    },
-    {
-        "text": "INFO: server started\nWARN: high load\nINFO: request received\nERROR: timeout\nINFO: response sent",
-        "description": "Count lines containing 'INFO'.",
-        "expected": "3",
-        "hint": "Use grep -c INFO"
-    },
-    {
-        "text": "zebra\napple\nMango\nBANANA\ncherry",
-        "description": "Sort alphabetically ignoring case.",
-        "expected": "apple\nBANANA\ncherry\nMango\nzebra",
-        "hint": "Use sort -f for case-insensitive sorting"
-    },
-    {
-        "text": "hello world\nHELLO WORLD\nHello World\ngoodbye world",
-        "description": "Find lines containing 'hello' (case-insensitive).",
-        "expected": "hello world\nHELLO WORLD\nHello World",
-        "hint": "Use grep -i hello"
-    },
-    {
-        "text": "a\na\na\nb\nc\nc\nd\nd\nd\nd",
-        "description": "Remove adjacent duplicates.",
-        "expected": "a\nb\nc\nd",
-        "hint": "Use uniq"
-    },
-    {
-        "text": "product,price,quantity\napple,1.50,100\nbanana,0.75,200\norange,2.00,150",
-        "description": "Extract product and price (fields 1 and 2).",
-        "expected": "product,price\napple,1.50\nbanana,0.75\norange,2.00",
-        "hint": "Use cut -d',' -f1,2"
-    },
-    {
-        "text": "success\nfailure\nSUCCESS\nFAILURE\nSuccess",
-        "description": "Count occurrences of 'success' (case-insensitive).",
-        "expected": "3",
-        "hint": "Use grep -ic success"
-    },
-    {
-        "text": "30\n5\n100\n15\n50",
-        "description": "Sort numerically ascending.",
-        "expected": "5\n15\n30\n50\n100",
-        "hint": "Use sort -n"
-    },
-    {
-        "text": "error in line 1\nwarning in line 2\nerror in line 3\ninfo in line 4\nerror in line 5",
-        "description": "Find lines NOT containing 'error'.",
-        "expected": "warning in line 2\ninfo in line 4",
-        "hint": "Use grep -v error"
-    },
-    {
-        "text": "one\none\ntwo\ntwo\ntwo\nthree",
-        "description": "Count occurrences of each unique line.",
-        "expected": "      2 one\n      3 two\n      1 three",
-        "hint": "Use uniq -c"
-    },
-    {
-        "text": "john:x:1000:1000:John Doe:/home/john:/bin/bash\njane:x:1001:1001:Jane Doe:/home/jane:/bin/zsh",
-        "description": "Extract username and shell (fields 1 and 7).",
-        "expected": "john:/bin/bash\njane:/bin/zsh",
-        "hint": "Use cut -d':' -f1,7"
-    },
-    {
-        "text": "TEST passed\ntest PASSED\nTEST PASSED\ntest failed",
-        "description": "Find lines containing 'passed' (case-insensitive).",
-        "expected": "TEST passed\ntest PASSED\nTEST PASSED",
-        "hint": "Use grep -i passed"
-    },
-    {
-        "text": "999\n1\n55\n100\n23",
-        "description": "Sort in reverse numeric order.",
-        "expected": "999\n100\n55\n23\n1",
-        "hint": "Use sort -rn"
-    },
-    {
-        "text": "cat\ndog\ncat\nbird\ndog\ncat",
-        "description": "Sort and then show unique entries only.",
-        "expected": "bird\ncat\ndog",
-        "hint": "Use sort -u"
-    },
-    {
-        "text": "id,name,score\n1,alice,95\n2,bob,87\n3,charlie,92",
-        "description": "Extract only the scores (third field).",
-        "expected": "score\n95\n87\n92",
-        "hint": "Use cut -d',' -f3"
-    },
-    {
-        "text": "DEBUG: starting\nINFO: running\nDEBUG: checking\nWARN: slow\nDEBUG: done",
-        "description": "Find lines NOT containing 'DEBUG'.",
-        "expected": "INFO: running\nWARN: slow",
-        "hint": "Use grep -v DEBUG"
-    },
-    {
         "text": "apple\napple\napple\nbanana\ncherry\ncherry",
         "description": "Show only unique lines (lines that appear exactly once).",
         "expected": "banana",
         "hint": "Use uniq -u"
     },
     {
-        "text": "first:second:third:fourth\na:b:c:d\n1:2:3:4",
-        "description": "Extract fields 2 and 4.",
-        "expected": "second:fourth\nb:d\n2:4",
-        "hint": "Use cut -d':' -f2,4"
+        "text": "john,25,engineer\nmary,30,designer\nbob,22,developer\nalice,28,manager\ncharlie,35,analyst",
+        "description": "Extract only the names (first column) from this CSV data.",
+        "expected": "john\nmary\nbob\nalice\ncharlie",
+        "hint": "Use cut with -d',' and -f1"
     },
     {
-        "text": "Linux is great\nWINDOWS is okay\nlinux rocks\nMAC is nice",
-        "description": "Count lines containing 'linux' (case-insensitive).",
-        "expected": "2",
-        "hint": "Use grep -ic linux"
-    },
-    {
-        "text": "www.google.com\nwww.github.com\nwww.example.com\nwww.test.org",
-        "description": "Find lines NOT containing '.org'.",
-        "expected": "www.google.com\nwww.github.com\nwww.example.com",
-        "hint": "Use grep -v .org"
-    },
-    {
-        "text": "x\nx\ny\ny\ny\nz",
-        "description": "Count occurrences of each line.",
-        "expected": "      2 x\n      3 y\n      1 z",
-        "hint": "Use uniq -c"
+        "text": "user1:password1:1001:1001\nuser2:password2:1002:1002\nuser3:password3:1003:1003",
+        "description": "Extract the username and UID (fields 1 and 3) using colon as delimiter.",
+        "expected": "user1:1001\nuser2:1002\nuser3:1003",
+        "hint": "Use cut -d':' -f1,3"
     },
     {
         "text": "name|age|country\njohn|25|usa\nmary|30|uk\nbob|28|canada",
@@ -204,99 +42,57 @@
         "hint": "Use cut -d'|' -f1,3"
     },
     {
-        "text": "Error: crash\nWarning: slow\nERROR: fail\nerror: bug\nInfo: ok",
-        "description": "Find 'error' case-insensitive.",
-        "expected": "Error: crash\nERROR: fail\nerror: bug",
-        "hint": "Use grep -i error"
+        "text": "ERROR: disk full\nWARNING: low memory\nERROR: network down\nINFO: backup complete\nERROR: process failed\nWARNING: high CPU",
+        "description": "Count how many ERROR lines there are.",
+        "expected": "3",
+        "hint": "Use grep with -c flag to count matches"
     },
     {
-        "text": "200\n404\n500\n301\n200\n404",
-        "description": "Sort numerically descending.",
-        "expected": "500\n404\n404\n301\n200\n200",
-        "hint": "Use sort -rn"
+        "text": "success\nfailure\nSUCCESS\nFAILURE\nSuccess",
+        "description": "Count occurrences of 'success' (case-insensitive).",
+        "expected": "3",
+        "hint": "Use grep -ic success"
     },
     {
-        "text": "aaa\nbbb\naaa\nccc\nbbb\naaa",
-        "description": "Sort and remove duplicates.",
-        "expected": "aaa\nbbb\nccc",
+        "text": "Hello World\nLINUX COMMANDS\nPractice Daily\nUPPERCASE TEXT\nmixed Case Here",
+        "description": "Find all lines containing 'linux' (case-insensitive).",
+        "expected": "LINUX COMMANDS",
+        "hint": "Use grep with -i flag for case-insensitive search"
+    },
+    {
+        "text": "Apple\napple\nAPPLE\nBanana\nbanana",
+        "description": "Find all lines containing 'apple' (case-insensitive).",
+        "expected": "Apple\napple\nAPPLE",
+        "hint": "Use grep -i apple"
+    },
+    {
+        "text": "ERROR: file not found\nDEBUG: loading config\nERROR: permission denied\nINFO: started\nDEBUG: checking",
+        "description": "Find all lines that do NOT contain 'DEBUG'.",
+        "expected": "ERROR: file not found\nERROR: permission denied\nINFO: started",
+        "hint": "Use grep -v to invert the match"
+    },
+    {
+        "text": "5\n3\n8\n1\n9\n2\n7",
+        "description": "Sort these numbers in reverse numeric order (highest first).",
+        "expected": "9\n8\n7\n5\n3\n2\n1",
+        "hint": "Use sort with -rn flags"
+    },
+    {
+        "text": "zebra\napple\nMango\nBANANA\ncherry",
+        "description": "Sort alphabetically ignoring case.",
+        "expected": "apple\nBANANA\ncherry\nMango\nzebra",
+        "hint": "Use sort -f for case-insensitive sorting"
+    },
+    {
+        "text": "cat\ndog\ncat\nbird\ndog\ncat",
+        "description": "Sort and then show unique entries only.",
+        "expected": "bird\ncat\ndog",
         "hint": "Use sort -u"
-    },
-    {
-        "text": "server1,online,100\nserver2,offline,0\nserver3,online,85\nserver4,offline,0",
-        "description": "Extract server name and status.",
-        "expected": "server1,online\nserver2,offline\nserver3,online\nserver4,offline",
-        "hint": "Use cut -d',' -f1,2"
-    },
-    {
-        "text": "get request\nPOST request\nGET request\npost request\nPUT request",
-        "description": "Find 'get' case-insensitive.",
-        "expected": "get request\nGET request",
-        "hint": "Use grep -i get"
-    },
-    {
-        "text": "dog\ndog\ndog\ncat\ncat\nbird",
-        "description": "Show lines appearing more than once.",
-        "expected": "dog\ncat",
-        "hint": "Use uniq -d"
-    },
-    {
-        "text": "a-b-c-d\n1-2-3-4\nx-y-z-w",
-        "description": "Extract fields 1 and 3 with dash delimiter.",
-        "expected": "a-c\n1-3\nx-z",
-        "hint": "Use cut -d'-' -f1,3"
     },
     {
         "text": "alpha\nbeta\ngamma\ndelta\nepsilon",
         "description": "Sort in reverse alphabetical order.",
         "expected": "gamma\nepsilon\ndelta\nbeta\nalpha",
         "hint": "Use sort -r"
-    },
-    {
-        "text": "file.txt\nfile.jpg\nfile.txt\nfile.png\nfile.txt",
-        "description": "Count lines containing '.txt'.",
-        "expected": "3",
-        "hint": "Use grep -c .txt"
-    },
-    {
-        "text": "red\nred\nblue\nblue\nblue\ngreen",
-        "description": "Count each unique color.",
-        "expected": "      2 red\n      3 blue\n      1 green",
-        "hint": "Use uniq -c"
-    },
-    {
-        "text": "id;name;value\n1;apple;10\n2;banana;20\n3;cherry;30",
-        "description": "Extract name and value (fields 2 and 3) with semicolon delimiter.",
-        "expected": "name;value\napple;10\nbanana;20\ncherry;30",
-        "hint": "Use cut -d';' -f2,3"
-    },
-    {
-        "text": "Connection established\nconnection lost\nCONNECTION reset\ndata received",
-        "description": "Find 'connection' case-insensitive.",
-        "expected": "Connection established\nconnection lost\nCONNECTION reset",
-        "hint": "Use grep -i connection"
-    },
-    {
-        "text": "77\n33\n99\n11\n55",
-        "description": "Sort numerically ascending.",
-        "expected": "11\n33\n55\n77\n99",
-        "hint": "Use sort -n"
-    },
-    {
-        "text": "word1\nword2\nword1\nword3\nword2\nword1",
-        "description": "Sort and show unique entries only.",
-        "expected": "word1\nword2\nword3",
-        "hint": "Use sort -u"
-    },
-    {
-        "text": "admin,root,1000\nguest,nobody,65534\nuser,user,1001",
-        "description": "Extract username and UID (fields 1 and 3).",
-        "expected": "admin,1000\nguest,65534\nuser,1001",
-        "hint": "Use cut -d',' -f1,3"
-    },
-    {
-        "text": "WARN: memory low\nwarn: disk full\nWarning: CPU high\ninfo: all good",
-        "description": "Find 'warn' case-insensitive.",
-        "expected": "WARN: memory low\nwarn: disk full\nWarning: CPU high",
-        "hint": "Use grep -i warn"
     }
 ]
