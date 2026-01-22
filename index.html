@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <title>Linux Command Practice</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -79,7 +80,7 @@
                     <div class="challenge-nav">
                         <button class="nav-btn" id="prev-btn">Previous</button>
                         <button class="nav-btn" id="next-btn">Next</button>
-                        <button class="nav-btn" id="hint-btn">Hint</button>
+                        <button class="nav-btn" id="hint-btn">Solution</button>
                         <button class="nav-btn hidden" id="skip-btn">Skip</button>
                         <button class="nav-btn hidden" id="show-answer-btn">Show Answer</button>
                     </div>
@@ -159,14 +160,16 @@
                         <code>sort</code> (alphabetical)<br>
                         <code>sort -n</code> (numeric)<br>
                         <code>sort -r</code> (reverse)<br>
-                        <code>sort -u</code> (unique only)
+                        <code>sort -u</code> (unique only)<br>
+                        <code>sort -f</code> (ignore case)
                     </div>
                     <div class="command-card">
                         <h4>uniq</h4>
                         <p>Filter duplicate adjacent lines</p>
                         <code>uniq</code> (remove duplicates)<br>
                         <code>uniq -c</code> (count occurrences)<br>
-                        <code>uniq -d</code> (show duplicates only)
+                        <code>uniq -d</code> (show duplicates only)<br>
+                        <code>uniq -u</code> (show unique only)
                     </div>
                     <div class="command-card">
                         <h4>cut</h4>

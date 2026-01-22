@@ -6,22 +6,10 @@
         "hint": "Use the head command with -n or just a number"
     },
     {
-        "text": "line1\nline2\nline3\nline4\nline5\nline6\nline7\nline8\nline9\nline10",
-        "description": "Show the first 5 lines.",
-        "expected": "line1\nline2\nline3\nline4\nline5",
-        "hint": "Use head -5"
-    },
-    {
         "text": "one\ntwo\nthree\nfour\nfive\nsix\nseven",
         "description": "Display the last 3 lines.",
         "expected": "five\nsix\nseven",
         "hint": "Use the tail command with -n or a number"
-    },
-    {
-        "text": "january\nfebruary\nmarch\napril\nmay\njune",
-        "description": "Display the last 4 lines.",
-        "expected": "march\napril\nmay\njune",
-        "hint": "Use tail -4"
     },
     {
         "text": "error: file not found\ninfo: starting process\nerror: connection failed\ndebug: checking status\nerror: timeout occurred\ninfo: process complete",
@@ -30,34 +18,16 @@
         "hint": "Use grep with the pattern 'error'"
     },
     {
-        "text": "user: alice logged in\nuser: bob logged out\nuser: alice logged out\nuser: charlie logged in",
-        "description": "Find all lines containing 'logged in'.",
-        "expected": "user: alice logged in\nuser: charlie logged in",
-        "hint": "Use grep 'logged in'"
-    },
-    {
         "text": "banana\napple\ncherry\napple\ndate\nbanana\napple",
         "description": "Sort these fruits alphabetically.",
         "expected": "apple\napple\napple\nbanana\nbanana\ncherry\ndate",
         "hint": "Use the sort command"
     },
     {
-        "text": "zebra\napple\nmango\nbanana\ncherry",
-        "description": "Sort these words alphabetically.",
-        "expected": "apple\nbanana\ncherry\nmango\nzebra",
-        "hint": "Use sort"
-    },
-    {
         "text": "5\n3\n8\n1\n9\n2\n7",
         "description": "Sort these numbers in numeric order.",
         "expected": "1\n2\n3\n5\n7\n8\n9",
         "hint": "Use sort -n for numeric sorting"
-    },
-    {
-        "text": "100\n50\n200\n75\n150",
-        "description": "Sort these numbers in numeric order.",
-        "expected": "50\n75\n100\n150\n200",
-        "hint": "Use sort -n"
     },
     {
         "text": "hello world\nthis is a test\nlinux commands are fun\npractice makes perfect",

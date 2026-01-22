@@ -96,6 +96,7 @@ export const commands = {
         let numeric = args.includes('-n');
         let reverse = args.includes('-r');
         let unique = args.includes('-u');
+        let ignoreCase = args.includes('-f');
 
         let delimiter = null;
         let keyField = null;
@@ -125,6 +126,9 @@ export const commands = {
                 const numA = parseFloat(valA) || 0;
                 const numB = parseFloat(valB) || 0;
                 return numA - numB;
+            }
+            if (ignoreCase) {
+                return valA.toLowerCase().localeCompare(valB.toLowerCase());
             }
             return valA.localeCompare(valB);
         });

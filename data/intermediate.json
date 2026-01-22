@@ -60,12 +60,6 @@
         "hint": "Use grep with -i flag for case-insensitive search"
     },
     {
-        "text": "Apple\napple\nAPPLE\nBanana\nbanana",
-        "description": "Find all lines containing 'apple' (case-insensitive).",
-        "expected": "Apple\napple\nAPPLE",
-        "hint": "Use grep -i apple"
-    },
-    {
         "text": "ERROR: file not found\nDEBUG: loading config\nERROR: permission denied\nINFO: started\nDEBUG: checking",
         "description": "Find all lines that do NOT contain 'DEBUG'.",
         "expected": "ERROR: file not found\nERROR: permission denied\nINFO: started",

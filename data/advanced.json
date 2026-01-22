@@ -54,12 +54,6 @@
         "hint": "Use sed 's/apple/FRUIT/g'"
     },
     {
-        "text": "foo bar baz\nhello world\nfoo test foo",
-        "description": "Replace all 'foo' with 'FOO'.",
-        "expected": "FOO bar baz\nhello world\nFOO test FOO",
-        "hint": "Use sed 's/foo/FOO/g'"
-    },
-    {
         "text": "ERROR: fail\nINFO: start\nERROR: crash\nDEBUG: test\nERROR: stop",
         "description": "Find ERROR lines and show line numbers.",
         "expected": "1:ERROR: fail\n3:ERROR: crash\n5:ERROR: stop",
