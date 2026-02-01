@@ -1,81 +1,9 @@
 [
     {
-        "text": "apple\nbanana\napple\ncherry\nbanana\napple\ndate\ncherry\napple",
-        "description": "Sort the list and count occurrences of each item.",
-        "expected": "      4 apple\n      2 banana\n      2 cherry\n      1 date",
-        "hint": "Chain: sort | uniq -c"
-    },
-    {
         "text": "apple\norange\napple\nbanana\norange\napple",
         "description": "Sort and count, then sort by count descending.",
         "expected": "      3 apple\n      2 orange\n      1 banana",
         "hint": "Chain: sort | uniq -c | sort -rn"
-    },
-    {
-        "text": "The quick brown fox\njumps over the lazy dog\nPack my box with five\ndozen liquor jugs",
-        "description": "Reverse the order of lines (last line first).",
-        "expected": "dozen liquor jugs\nPack my box with five\njumps over the lazy dog\nThe quick brown fox",
-        "hint": "Use the tac command"
-    },
-    {
-        "text": "cat\ndog\nbird\nfish\nelephant",
-        "description": "Reverse each line (characters in reverse order).",
-        "expected": "tac\ngod\ndrib\nhsif\tnahpele",
-        "hint": "Use the rev command"
-    },
-    {
-        "text": "10\n25\n5\n100\n50\n75\n30",
-        "description": "Sort numerically descending and show only the top 3.",
-        "expected": "100\n75\n50",
-        "hint": "Chain: sort -rn | head -3"
-    },
-    {
-        "text": "100\n50\n200\n75\n150\n25",
-        "description": "Sort numerically and show the bottom 3 (smallest).",
-        "expected": "25\n50\n75",
-        "hint": "Chain: sort -n | head -3"
-    },
-    {
-        "text": "hello world\ngoodbye world\nhello there",
-        "description": "Convert all text to uppercase.",
-        "expected": "HELLO WORLD\nGOODBYE WORLD\nHELLO THERE",
-        "hint": "Use tr 'a-z' 'A-Z'"
-    },
-    {
-        "text": "HELLO WORLD\nGOODBYE FRIEND\nTEST MESSAGE",
-        "description": "Convert all text to lowercase.",
-        "expected": "hello world\ngoodbye friend\ntest message",
-        "hint": "Use tr 'A-Z' 'a-z'"
-    },
-    {
-        "text": "apple\nbanana\ncherry\ndate\nelderberry",
-        "description": "Replace 'apple' with 'FRUIT' in each line.",
-        "expected": "FRUIT\nbanana\ncherry\ndate\nelderberry",
-        "hint": "Use sed 's/apple/FRUIT/g'"
-    },
-    {
-        "text": "ERROR: fail\nINFO: start\nERROR: crash\nDEBUG: test\nERROR: stop",
-        "description": "Find ERROR lines and show line numbers.",
-        "expected": "1:ERROR: fail\n3:ERROR: crash\n5:ERROR: stop",
-        "hint": "Use grep -n ERROR"
-    },
-    {
-        "text": "test.txt\ndata.csv\ntest.log\ninfo.txt\ntest.md",
-        "description": "Find lines containing 'test' and count them.",
-        "expected": "3",
-        "hint": "Use grep -c test"
-    },
-    {
-        "text": "hello 123\nworld 456\ntest 789",
-        "description": "Delete all digits from the text.",
-        "expected": "hello \nworld \ntest ",
-        "hint": "Use tr -d '0-9'"
-    },
-    {
-        "text": "123abc456\n789def012\n345ghi678",
-        "description": "Delete all letters, keep only digits.",
-        "expected": "123456\n789012\n345678",
-        "hint": "Use tr -d 'a-z'"
     },
     {
         "text": "first line\nsecond line\nthird line\nfourth line",
@@ -96,52 +24,10 @@
         "hint": "Chain: cut -d',' -f2 | sort -u"
     },
     {
-        "text": "Line One\nLine Two\nLine Three",
-        "description": "Show with line numbers.",
-        "expected": "     1\tLine One\n     2\tLine Two\n     3\tLine Three",
-        "hint": "Use cat -n"
-    },
-    {
-        "text": "hello world\ntest string\nsample text",
-        "description": "Replace spaces with underscores.",
-        "expected": "hello_world\ntest_string\nsample_text",
-        "hint": "Use tr ' ' '_'"
-    },
-    {
-        "text": "a b c d e\nf g h i j\nk l m n o",
-        "description": "Replace spaces with newlines (one letter per line).",
-        "expected": "a\nb\nc\nd\ne\nf\ng\nh\ni\nj\nk\nl\nm\nn\no",
-        "hint": "Use tr ' ' '\\n'"
-    },
-    {
-        "text": "DEBUG: start\nINFO: process\nDEBUG: check\nERROR: fail\nDEBUG: end",
-        "description": "Find lines NOT containing DEBUG.",
-        "expected": "INFO: process\nERROR: fail",
-        "hint": "Use grep -v DEBUG"
-    },
-    {
         "text": "a\nb\nc\nd\ne\nf\ng\nh",
         "description": "Show lines 3-6.",
         "expected": "c\nd\ne\nf",
         "hint": "Chain: head -6 | tail -4"
-    },
-    {
-        "text": "hello:world:test\nfoo:bar:baz\none:two:three",
-        "description": "Replace colons with commas.",
-        "expected": "hello,world,test\nfoo,bar,baz\none,two,three",
-        "hint": "Use tr ':' ','"
-    },
-    {
-        "text": "tab\tseparated\ttext\nmore\ttabs\there",
-        "description": "Replace tabs with spaces.",
-        "expected": "tab separated text\nmore tabs here",
-        "hint": "Use tr '\\t' ' '"
-    },
-    {
-        "text": "192.168.1.1\n10.0.0.1\n192.168.1.2\n172.16.0.1\n192.168.1.3",
-        "description": "Find lines starting with 192 and count.",
-        "expected": "3",
-        "hint": "Use grep -c ^192"
     },
     {
         "text": "user1,admin,active\nuser2,guest,inactive\nuser3,admin,active\nuser4,guest,active",
@@ -160,5 +46,83 @@
         "description": "Reverse lines then reverse characters.",
         "expected": "ammag\nateb\nahpla",
         "hint": "Chain: tac | rev"
+    },
+    {
+        "text": "apple:red:5:1.50\nbanana:yellow:12:0.75\ncherry:red:20:2.00\ngrape:purple:25:1.00",
+        "description": "Find red fruits and extract name and price (fields 1 and 4).",
+        "expected": "apple:1.50\ncherry:2.00",
+        "hint": "Chain: grep red | cut -d':' -f1,4"
+    },
+    {
+        "text": "GET /index.html 200\nPOST /login 401\nGET /about.html 200\nGET /admin 403\nPOST /api 500",
+        "description": "Find non-200 responses, count them.",
+        "expected": "3",
+        "hint": "Chain: grep -v 200 | wc -l"
+    },
+    {
+        "text": "host1:web:running:80\nhost2:db:stopped:3306\nhost3:web:running:8080\nhost4:cache:running:6379",
+        "description": "Find running services, extract host and port.",
+        "expected": "host1:80\nhost3:8080\nhost4:6379",
+        "hint": "Chain: grep running | cut -d':' -f1,4"
+    },
+    {
+        "text": "hello world\nHELLO WORLD\nhello WORLD\nHELLO world",
+        "description": "Convert to lowercase, sort unique.",
+        "expected": "hello world",
+        "hint": "Chain: tr 'A-Z' 'a-z' | sort -u"
+    },
+    {
+        "text": "A B C\nD E F\nG H I",
+        "description": "Convert to lowercase, replace spaces with commas.",
+        "expected": "a,b,c\nd,e,f\ng,h,i",
+        "hint": "Chain: tr 'A-Z' 'a-z' | tr ' ' ','"
+    },
+    {
+        "text": "alpha beta gamma\ndelta epsilon zeta\neta theta iota",
+        "description": "Extract second word from each line, sort.",
+        "expected": "beta\nepsilon\ntheta",
+        "hint": "Chain: cut -d' ' -f2 | sort"
+    },
+    {
+        "text": "apple,fruit,red\ncarrot,vegetable,orange\nbanana,fruit,yellow\nbroccoli,vegetable,green",
+        "description": "Find fruits, extract name and color.",
+        "expected": "apple,red\nbanana,yellow",
+        "hint": "Chain: grep fruit | cut -d',' -f1,3"
+    },
+    {
+        "text": "Monday 10\nTuesday 15\nWednesday 8\nThursday 20\nFriday 12",
+        "description": "Sort by number descending, show top 3 days.",
+        "expected": "Thursday 20\nTuesday 15\nFriday 12",
+        "hint": "Chain: sort -t' ' -k2 -rn | head -3"
+    },
+    {
+        "text": "process1,high,running\nprocess2,low,stopped\nprocess3,high,running\nprocess4,medium,running\nprocess5,high,stopped",
+        "description": "Find high priority running processes.",
+        "expected": "process1,high,running\nprocess3,high,running",
+        "hint": "Chain: grep high | grep running"
+    },
+    {
+        "text": "server1 cpu=45%\nserver2 cpu=80%\nserver3 cpu=30%\nserver1 cpu=50%\nserver2 cpu=85%\nserver1 cpu=55%",
+        "description": "Count entries per server, sorted by count descending.",
+        "expected": "      3 server1\n      2 server2\n      1 server3",
+        "hint": "Chain: cut -d' ' -f1 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "user:alice:active:admin\nuser:bob:inactive:guest\nuser:charlie:active:admin\nuser:diana:active:guest",
+        "description": "Find active admins, extract username (field 2).",
+        "expected": "alice\ncharlie",
+        "hint": "Chain: grep active | grep admin | cut -d':' -f2"
+    },
+    {
+        "text": "2024-01-15 ERROR disk full\n2024-01-15 INFO started\n2024-01-16 ERROR memory\n2024-01-16 ERROR network\n2024-01-17 INFO done",
+        "description": "Extract dates with ERROR, show unique dates.",
+        "expected": "2024-01-15\n2024-01-16",
+        "hint": "Chain: grep ERROR | cut -d' ' -f1 | sort -u"
+    },
+    {
+        "text": "commit1,alice,add feature\ncommit2,bob,fix bug\ncommit3,alice,update docs\ncommit4,charlie,add test\ncommit5,alice,fix typo",
+        "description": "Count commits per author, sorted.",
+        "expected": "      3 alice\n      1 bob\n      1 charlie",
+        "hint": "Chain: cut -d',' -f2 | sort | uniq -c | sort -rn"
     }
 ]
