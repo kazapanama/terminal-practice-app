@@ -138,7 +138,9 @@
                         <code>grep -i "pattern"</code> (case-insensitive)<br>
                         <code>grep -v "pattern"</code> (invert match)<br>
                         <code>grep -c "pattern"</code> (count matches)<br>
-                        <code>grep -n "pattern"</code> (show line numbers)
+                        <code>grep -n "pattern"</code> (show line numbers)<br>
+                        <code>grep -E "a|b"</code> (extended regex OR)<br>
+                        <code>grep "^start"</code> (lines starting with)
                     </div>
                     <div class="command-card">
                         <h4>head / tail</h4>
@@ -161,7 +163,8 @@
                         <code>sort -n</code> (numeric)<br>
                         <code>sort -r</code> (reverse)<br>
                         <code>sort -u</code> (unique only)<br>
-                        <code>sort -f</code> (ignore case)
+                        <code>sort -f</code> (ignore case)<br>
+                        <code>sort -t',' -k2</code> (by field 2, comma-delimited)
                     </div>
                     <div class="command-card">
                         <h4>uniq</h4>

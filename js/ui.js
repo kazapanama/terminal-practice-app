@@ -269,8 +269,28 @@ export function showSuccess(message = 'Correct! Great job!') {
                 state.currentChallengeIndex = nextIndex;
                 loadChallenge();
             } else {
-                // Level complete!
-                updateDifficultyButtons();
+                // Level complete! Try to advance to next difficulty
+                const levels = ['beginner', 'intermediate', 'advanced', 'expert'];
+                const currentLevelIndex = levels.indexOf(state.currentLevel);
+
+                if (currentLevelIndex < levels.length - 1) {
+                    // Move to next difficulty level
+                    const nextLevel = levels[currentLevelIndex + 1];
+                    state.currentLevel = nextLevel;
+                    state.currentChallengeIndex = 0;
+                    saveProgress();
+
+                    // Update UI
+                    document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.level === nextLevel);
+                    });
+                    updateDifficultyButtons();
+                    renderChallengeGrid();
+                    loadChallenge();
+                } else {
+                    // All levels complete!
+                    updateDifficultyButtons();
+                }
             }
         }
     }, 1500);
