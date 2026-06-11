@@ -33,6 +33,8 @@
                     <button class="difficulty-btn" data-level="intermediate">Intermediate</button>
                     <button class="difficulty-btn" data-level="advanced">Advanced</button>
                     <button class="difficulty-btn" data-level="expert">Expert</button>
+                    <button class="difficulty-btn" data-level="master">Master</button>
+                    <button class="difficulty-btn" data-level="realworld">Real World</button>
                     <button class="difficulty-btn" data-level="sandbox">Sandbox</button>
                 </div>
                 <div class="challenge-grid-container">
@@ -44,6 +46,13 @@
                 <div class="practice-config">
                     <h3>Select Commands to Practice</h3>
                     <div class="command-checkboxes" id="command-checkboxes"></div>
+                    <h3>Task Difficulty</h3>
+                    <div class="practice-difficulty">
+                        <button class="practice-difficulty-btn" data-pd="single">Single Command</button>
+                        <button class="practice-difficulty-btn" data-pd="short">Short Pipes (2)</button>
+                        <button class="practice-difficulty-btn" data-pd="long">Long Pipes (3+)</button>
+                        <button class="practice-difficulty-btn" data-pd="mixed">Mixed</button>
+                    </div>
                     <div class="practice-actions">
                         <button class="generate-btn" id="generate-btn">Generate Problem</button>
                         <button class="select-all-btn" id="select-all-btn">Select All</button>
@@ -139,14 +148,16 @@
                         <code>grep -v "pattern"</code> (invert match)<br>
                         <code>grep -c "pattern"</code> (count matches)<br>
                         <code>grep -n "pattern"</code> (show line numbers)<br>
+                        <code>grep -w "word"</code> (whole word only)<br>
                         <code>grep -E "a|b"</code> (extended regex OR)<br>
-                        <code>grep "^start"</code> (lines starting with)
+                        <code>grep "^start"</code> / <code>grep "end$"</code> (anchors)
                     </div>
                     <div class="command-card">
                         <h4>head / tail</h4>
                         <p>Show first/last lines</p>
                         <code>head -n 5</code> or <code>head -5</code><br>
-                        <code>tail -n 3</code> or <code>tail -3</code>
+                        <code>tail -n 3</code> or <code>tail -3</code><br>
+                        <code>tail -n +2</code> (from line 2, e.g. skip header)
                     </div>
                     <div class="command-card">
                         <h4>wc</h4>
@@ -172,19 +183,22 @@
                         <code>uniq</code> (remove duplicates)<br>
                         <code>uniq -c</code> (count occurrences)<br>
                         <code>uniq -d</code> (show duplicates only)<br>
-                        <code>uniq -u</code> (show unique only)
+                        <code>uniq -u</code> (show unique only)<br>
+                        <code>uniq -i</code> (ignore case)
                     </div>
                     <div class="command-card">
                         <h4>cut</h4>
                         <p>Extract columns/fields from text</p>
                         <code>cut -c1-5</code> (characters 1-5)<br>
                         <code>cut -d',' -f2</code> (field 2, comma-delimited)<br>
-                        <code>cut -d':' -f1,3</code> (fields 1 and 3)
+                        <code>cut -d':' -f1,3</code> (fields 1 and 3)<br>
+                        <code>cut -d',' -f2-</code> (field 2 to the end)
                     </div>
                     <div class="command-card">
                         <h4>tr</h4>
                         <p>Translate or delete characters</p>
                         <code>tr 'a-z' 'A-Z'</code> (to uppercase)<br>
+                        <code>tr '[:lower:]' '[:upper:]'</code> (char classes)<br>
                         <code>tr -d '0-9'</code> (delete digits)<br>
                         <code>tr -s ' '</code> (squeeze spaces)
                     </div>
@@ -206,9 +220,37 @@
                     </div>
                     <div class="command-card">
                         <h4>sed</h4>
-                        <p>Stream editor for substitution</p>
+                        <p>Stream editor</p>
                         <code>sed 's/old/new/'</code> (first match)<br>
-                        <code>sed 's/old/new/g'</code> (all matches)
+                        <code>sed 's/old/new/g'</code> (all matches)<br>
+                        <code>sed 's|/a|/b|'</code> (any delimiter)<br>
+                        <code>sed 's/cat/[&amp;]/'</code> (&amp; = the match)<br>
+                        <code>sed 's/(a+) (b+)/\2 \1/'</code> (groups)<br>
+                        <code>sed '/pattern/d'</code> (delete matching)<br>
+                        <code>sed '2d'</code>, <code>sed '2,4d'</code> (delete lines)<br>
+                        <code>sed -n '2,4p'</code> (print only lines 2-4)
+                    </div>
+                    <div class="command-card">
+                        <h4>awk</h4>
+                        <p>Field-based processing</p>
+                        <code>awk '{print $1}'</code> (1st field)<br>
+                        <code>awk -F',' '{print $2}'</code> (custom separator)<br>
+                        <code>awk '{print $NF}'</code> (last field)<br>
+                        <code>awk '{print NR": "$0}'</code> (line numbers)<br>
+                        <code>awk '$3 > 100'</code> (filter by condition)<br>
+                        <code>awk '$2 == "x" {print $1}'</code> (match + print)<br>
+                        <code>awk '{s += $1} END {print s}'</code> (sum)
+                    </div>
+                    <div class="command-card">
+                        <h4>nl</h4>
+                        <p>Number lines</p>
+                        <code>nl</code> (number non-empty lines)
+                    </div>
+                    <div class="command-card">
+                        <h4>paste</h4>
+                        <p>Merge lines</p>
+                        <code>paste -sd','</code> (join all lines with ,)<br>
+                        <code>paste -s -d'+'</code> (join with +)
                     </div>
                     <div class="command-card">
                         <h4>Pipes</h4>

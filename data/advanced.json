@@ -39,7 +39,7 @@
         "text": "server1,active,100\nserver2,inactive,0\nserver3,active,75",
         "description": "Extract server and status, then grep active.",
         "expected": "server1,active\nserver3,active",
-        "hint": "Chain: cut -d',' -f1,2 | grep active"
+        "hint": "Chain: cut -d',' -f1,2 | grep -w active"
     },
     {
         "text": "alpha\nbeta\ngamma",

@@ -1,0 +1,182 @@
+[
+    {
+        "text": "laptop,1200,5\nphone,800,12\ntablet,450,8\nmonitor,300,15\nkeyboard,75,30",
+        "description": "Using awk, print only the product names (1st comma-separated field).",
+        "expected": "laptop\nphone\ntablet\nmonitor\nkeyboard",
+        "hint": "Use: awk -F',' '{print $1}' - the -F flag sets the field separator"
+    },
+    {
+        "text": "root 1 0.0 systemd\nwww-data 1337 2.5 nginx\npostgres 2001 5.1 postgres\nuser 3742 1.2 firefox",
+        "description": "Using awk, print the LAST field of every line ($NF).",
+        "expected": "systemd\nnginx\npostgres\nfirefox",
+        "hint": "Use: awk '{print $NF}' - NF holds the number of fields, $NF is the last one"
+    },
+    {
+        "text": "one two three\nalpha beta\nred green blue yellow\nsingle",
+        "description": "Using awk, print the number of fields (words) in each line.",
+        "expected": "3\n2\n4\n1",
+        "hint": "Use: awk '{print NF}'"
+    },
+    {
+        "text": "deploy started\nbuild passed\ntests passed\ndeploy finished",
+        "description": "Using awk, print each line prefixed with its line number and \": \" (e.g. \"1: deploy started\").",
+        "expected": "1: deploy started\n2: build passed\n3: tests passed\n4: deploy finished",
+        "hint": "Use: awk '{print NR\": \"$0}' - NR is the line number, $0 the whole line"
+    },
+    {
+        "text": "alice,82\nbob,47\ncarol,95\ndave,61\neve,78",
+        "description": "Using awk, print the names of students who scored more than 60 (2nd field).",
+        "expected": "alice\ncarol\ndave\neve",
+        "hint": "Use: awk -F',' '$2 > 60 {print $1}' - the condition before {} filters lines"
+    },
+    {
+        "text": "alice,engineering\nbob,sales\ncarol,engineering\ndave,marketing\neve,engineering",
+        "description": "Using awk, print the names of everyone whose department (2nd field) is exactly \"engineering\".",
+        "expected": "alice\ncarol\neve",
+        "hint": "Use: awk -F',' '$2 == \"engineering\" {print $1}'"
+    },
+    {
+        "text": "120\n340\n95\n210\n55",
+        "description": "Using awk, compute the sum of all the numbers.",
+        "expected": "820",
+        "hint": "Use: awk '{sum += $1} END {print sum}' - accumulate, then print once at the END"
+    },
+    {
+        "text": "INFO service started\nERROR disk full\nINFO heartbeat ok\nERROR connection lost\nERROR timeout\nWARN retrying",
+        "description": "Using a single awk command, count how many lines contain \"ERROR\".",
+        "expected": "3",
+        "hint": "Use: awk '/ERROR/ {n++} END {print n}' - a /pattern/ rule runs only on matching lines"
+    },
+    {
+        "text": "alice 93\nbob 78\ncarol 85",
+        "description": "Using awk, swap the columns: print the score first, then the name.",
+        "expected": "93 alice\n78 bob\n85 carol",
+        "hint": "Use: awk '{print $2, $1}' - a comma inserts a space between fields"
+    },
+    {
+        "text": "HOME,/home/user\nSHELL,/bin/bash\nEDITOR,vim\nLANG,en_US.UTF-8",
+        "description": "Using awk, print each pair in the format KEY=VALUE (fields joined by \"=\").",
+        "expected": "HOME=/home/user\nSHELL=/bin/bash\nEDITOR=vim\nLANG=en_US.UTF-8",
+        "hint": "Use: awk -F',' '{print $1\"=\"$2}' - adjacent expressions are concatenated"
+    },
+    {
+        "text": "root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\nalice:x:1000:1000:Alice:/home/alice:/bin/bash\nbob:x:1001:1001:Bob:/home/bob:/bin/zsh",
+        "description": "From this /etc/passwd data, use awk with \":\" as separator to print username and shell separated by a space.",
+        "expected": "root /bin/bash\ndaemon /usr/sbin/nologin\nalice /bin/bash\nbob /bin/zsh",
+        "hint": "Use: awk -F':' '{print $1, $7}'"
+    },
+    {
+        "text": "80\n90\n70\n100\n60",
+        "description": "Using awk, compute the average of the numbers (sum divided by the number of lines).",
+        "expected": "80",
+        "hint": "Use: awk '{s += $1} END {print s/NR}' - in END, NR equals the total line count"
+    },
+    {
+        "text": "INFO boot ok\nDEBUG cache warm\nERROR disk failure\nINFO sync done\nDEBUG gc pause\nERROR oom kill",
+        "description": "Using sed, delete every line containing \"DEBUG\".",
+        "expected": "INFO boot ok\nERROR disk failure\nINFO sync done\nERROR oom kill",
+        "hint": "Use: sed '/DEBUG/d' - the d command deletes lines matching the pattern"
+    },
+    {
+        "text": "header line\nrow one\nrow two\nrow three\nfooter line",
+        "description": "Using sed, delete lines 2 through 4.",
+        "expected": "header line\nfooter line",
+        "hint": "Use: sed '2,4d' - an address range before d"
+    },
+    {
+        "text": "alpha\nbeta\ngamma\ndelta\nepsilon\nzeta",
+        "description": "Using sed, print ONLY lines 2 through 4.",
+        "expected": "beta\ngamma\ndelta",
+        "hint": "Use: sed -n '2,4p' - -n suppresses default output, p prints the addressed lines"
+    },
+    {
+        "text": "/home/alice/notes.txt\n/home/bob/report.pdf\n/home/carol/data.csv",
+        "description": "Using sed, replace \"/home\" with \"/users\" in each path. Tip: use a delimiter other than \"/\".",
+        "expected": "/users/alice/notes.txt\n/users/bob/report.pdf\n/users/carol/data.csv",
+        "hint": "Use: sed 's|/home|/users|' - with | as delimiter you don't need to escape slashes"
+    },
+    {
+        "text": "error in module A\nwarning in module B\nerror in module C",
+        "description": "Using sed, wrap the word \"error\" in square brackets: \"[error]\". The & symbol refers to the matched text.",
+        "expected": "[error] in module A\nwarning in module B\n[error] in module C",
+        "hint": "Use: sed 's/error/[&]/' - & stands for whatever the pattern matched"
+    },
+    {
+        "text": "john smith\nanna brown\npeter jones",
+        "description": "Using sed with capture groups, swap first and last name on every line.",
+        "expected": "smith john\nbrown anna\njones peter",
+        "hint": "Use: sed 's/(\\w+) (\\w+)/\\2 \\1/' - \\1 and \\2 refer to the captured groups"
+    },
+    {
+        "text": "buy milk\nclean desk\nwrite report",
+        "description": "Using sed, add the prefix \"TODO: \" to the beginning of every line.",
+        "expected": "TODO: buy milk\nTODO: clean desk\nTODO: write report",
+        "hint": "Use: sed 's/^/TODO: /' - ^ matches the start of the line"
+    },
+    {
+        "text": "first item\nsecond item\nthird item",
+        "description": "Using sed, add a semicolon \";\" to the end of every line.",
+        "expected": "first item;\nsecond item;\nthird item;",
+        "hint": "Use: sed 's/$/;/' - $ matches the end of the line"
+    },
+    {
+        "text": "name,city,age\nalice,kyiv,30\nbob,lviv,25\ncarol,odesa,35",
+        "description": "Skip the CSV header line and output only the data rows.",
+        "expected": "alice,kyiv,30\nbob,lviv,25\ncarol,odesa,35",
+        "hint": "Use: tail -n +2 - the + means \"start AT line 2\" instead of \"last 2 lines\""
+    },
+    {
+        "text": "service active\nservice inactive\nbackup active\ncache inactive\nproxy active",
+        "description": "Find the lines where the whole word \"active\" appears (must not match \"inactive\").",
+        "expected": "service active\nbackup active\nproxy active",
+        "hint": "Use: grep -w active - -w matches whole words only"
+    },
+    {
+        "text": "FATAL kernel panic\nINFO all good\nERROR disk fail\nDEBUG verbose\nWARN low memory\nINFO done",
+        "description": "Using a single grep, find lines containing \"FATAL\", \"ERROR\" or \"WARN\".",
+        "expected": "FATAL kernel panic\nERROR disk fail\nWARN low memory",
+        "hint": "Use: grep -E 'FATAL|ERROR|WARN' - -E enables | alternation"
+    },
+    {
+        "text": "mixed Case text\nanother Line here\nthird LINE done",
+        "description": "Convert all text to UPPERCASE using tr with POSIX character classes.",
+        "expected": "MIXED CASE TEXT\nANOTHER LINE HERE\nTHIRD LINE DONE",
+        "hint": "Use: tr '[:lower:]' '[:upper:]'"
+    },
+    {
+        "text": "too    many     spaces\nspaced     out      text\nneat   columns    here",
+        "description": "Squeeze every run of repeated spaces into a single space.",
+        "expected": "too many spaces\nspaced out text\nneat columns here",
+        "hint": "Use: tr -s ' ' - -s squeezes repeats of the given character"
+    },
+    {
+        "text": "id,name,dept,salary\n1,alice,eng,100000\n2,bob,sales,80000\n3,carol,eng,120000",
+        "description": "Drop the id column: keep every CSV field from the 2nd one to the end.",
+        "expected": "name,dept,salary\nalice,eng,100000\nbob,sales,80000\ncarol,eng,120000",
+        "hint": "Use: cut -d',' -f2- - an open-ended field range"
+    },
+    {
+        "text": "walk the dog\nwater the plants\nread a book\ncall grandma",
+        "description": "Number every line using nl.",
+        "expected": "     1\twalk the dog\n     2\twater the plants\n     3\tread a book\n     4\tcall grandma",
+        "hint": "Use: nl - numbers lines with right-aligned numbers and a tab"
+    },
+    {
+        "text": "red\ngreen\nblue\nyellow",
+        "description": "Join all lines into a single comma-separated line.",
+        "expected": "red,green,blue,yellow",
+        "hint": "Use: paste -sd',' - -s serializes all lines, -d sets the delimiter"
+    },
+    {
+        "text": "alice 47\nbob 92\ncarol 78\ndave 85\neve 63",
+        "description": "Sort by score (2nd space-separated column) from highest to lowest.",
+        "expected": "bob 92\ndave 85\ncarol 78\neve 63\nalice 47",
+        "hint": "Use: sort -k2 -rn - -k2 sorts by the 2nd field, -r reverses, -n compares numerically"
+    },
+    {
+        "text": "Apple\napple\nAPPLE\nbanana\nBanana\ncherry",
+        "description": "Remove adjacent duplicates treating different letter case as equal.",
+        "expected": "Apple\nbanana\ncherry",
+        "hint": "Use: uniq -i - -i ignores case when comparing"
+    }
+]

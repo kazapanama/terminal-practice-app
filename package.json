@@ -1,0 +1,11 @@
+{
+    "name": "terminal-practice-app",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "start": "python -m http.server 8080",
+        "generate-levels": "node scripts/generateLevels.mjs",
+        "verify-levels": "node scripts/verifyLevels.mjs",
+        "test": "node scripts/testCommands.mjs"
+    }
+}

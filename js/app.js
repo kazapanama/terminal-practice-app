@@ -17,7 +17,7 @@ import {
 
 // Load challenge data from JSON files
 async function loadChallengeData() {
-    const levels = ['beginner', 'intermediate', 'advanced', 'expert', 'sandbox'];
+    const levels = ['beginner', 'intermediate', 'advanced', 'expert', 'master', 'realworld', 'sandbox'];
 
     for (const level of levels) {
         try {

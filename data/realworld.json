@@ -1,0 +1,182 @@
+[
+    {
+        "text": "GET /index.html 200 12ms\nPOST /api/login 401 88ms\nGET /api/users 500 230ms\nGET /style.css 200 8ms\nPOST /api/orders 500 340ms\nGET /api/health 200 5ms\nGET /favicon.ico 404 3ms\nPOST /api/login 500 120ms",
+        "description": "Web server log: count how many requests failed with status 500.",
+        "expected": "3",
+        "hint": "Use: grep ' 500 ' | wc -l - spaces around 500 avoid matching it inside other numbers"
+    },
+    {
+        "text": "GET /api/users 200\nGET /index.html 200\nGET /api/users 200\nPOST /api/login 200\nGET /api/users 304\nGET /index.html 200\nGET /api/health 200\nGET /api/users 200",
+        "description": "Access log: find the most requested endpoint (2nd field) and show it with its hit count.",
+        "expected": "      4 /api/users",
+        "hint": "Chain: cut -d' ' -f2 | sort | uniq -c | sort -rn | head -1"
+    },
+    {
+        "text": "Failed password for root from 203.0.113.5\nAccepted password for alice from 10.0.0.3\nFailed password for admin from 203.0.113.5\nFailed password for root from 198.51.100.7\nAccepted publickey for bob from 10.0.0.4\nFailed password for root from 203.0.113.5",
+        "description": "SSH auth log: list the source IPs (last field) of FAILED logins, ranked by number of attempts (most frequent first).",
+        "expected": "      3 203.0.113.5\n      1 198.51.100.7",
+        "hint": "Chain: grep Failed | awk '{print $NF}' | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\nalice:x:1000:1000:Alice:/home/alice:/bin/bash\nbob:x:1001:1001:Bob:/home/bob:/bin/zsh\nbackup:x:34:34:backup:/var/backups:/usr/sbin/nologin\ncarol:x:1002:1002:Carol:/home/carol:/bin/bash",
+        "description": "/etc/passwd: print the usernames of accounts whose shell is /bin/bash.",
+        "expected": "root\nalice\ncarol",
+        "hint": "Chain: grep '/bin/bash' | cut -d':' -f1"
+    },
+    {
+        "text": "root:x:0:0:root:/root:/bin/bash\nalice:x:1000:1000:Alice:/home/alice:/bin/bash\nbob:x:1001:1001:Bob:/home/bob:/bin/zsh\ncarol:x:1002:1002:Carol:/home/carol:/bin/bash",
+        "description": "/etc/passwd: count how many accounts use each shell (7th field), most common first.",
+        "expected": "      3 /bin/bash\n      1 /bin/zsh",
+        "hint": "Chain: cut -d':' -f7 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "2024-03-01,alice,laptop,1200\n2024-03-01,bob,phone,800\n2024-03-02,alice,tablet,450\n2024-03-02,carol,laptop,1200\n2024-03-03,bob,monitor,300\n2024-03-03,alice,phone,800",
+        "description": "Sales CSV (date,seller,product,amount): compute the total revenue (sum of the 4th field).",
+        "expected": "4750",
+        "hint": "Use: awk -F',' '{sum += $4} END {print sum}'"
+    },
+    {
+        "text": "alice,engineering,98000\nbob,sales,72000\ncarol,engineering,115000\ndave,marketing,65000\neve,finance,88000",
+        "description": "Employee CSV: print only the NAME of the highest-paid person.",
+        "expected": "carol",
+        "hint": "Chain: sort -t',' -k3 -rn | head -1 | cut -d',' -f1"
+    },
+    {
+        "text": "web-1 running nginx\ndb-1 exited postgres\nweb-2 running nginx\ncache-1 running redis\nworker-1 exited celery\nweb-3 running nginx",
+        "description": "Container list: print the names (1st column) of containers in the \"running\" state.",
+        "expected": "web-1\nweb-2\ncache-1\nweb-3",
+        "hint": "Chain: grep running | cut -d' ' -f1 (awk '{print $1}' works too)"
+    },
+    {
+        "text": "ERROR: failed to bind port\nINFO: server listening\nERROR: failed to bind port\nWARN: high latency\nERROR: out of memory\nINFO: request served\nERROR: failed to bind port",
+        "description": "App log: list each distinct ERROR message exactly once (sorted).",
+        "expected": "ERROR: failed to bind port\nERROR: out of memory",
+        "hint": "Chain: grep ERROR | sort -u"
+    },
+    {
+        "text": "laptop,electronics,1200,0\nphone,electronics,800,25\ndesk,furniture,340,0\nchair,furniture,150,12\nwebcam,electronics,90,0\nlamp,furniture,45,7",
+        "description": "Inventory CSV (product,category,price,stock): print the products that are out of stock (4th field equals 0).",
+        "expected": "laptop\ndesk\nwebcam",
+        "hint": "Use: awk -F',' '$4 == 0 {print $1}'"
+    },
+    {
+        "text": "a1b2c3 alice Fix login bug\nd4e5f6 bob Add dark mode\ng7h8i9 alice Update deps\nj1k2l3 carol Refactor api\nm4n5o6 alice Fix crash\np7q8r9 bob Add tests",
+        "description": "Git log (hash author message): count commits per author (2nd field), most active first.",
+        "expected": "      3 alice\n      2 bob\n      1 carol",
+        "hint": "Chain: cut -d' ' -f2 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "10.0.0.5\n192.168.1.10\n10.0.0.5\n172.16.0.3\n10.0.0.5\n192.168.1.10\n10.0.0.8",
+        "description": "IP hit list: print ONLY the most frequent IP address (just the IP, no count).",
+        "expected": "10.0.0.5",
+        "hint": "Chain: sort | uniq -c | sort -rn | head -1 | awk '{print $2}'"
+    },
+    {
+        "text": "kyiv,-3\nlviv,2\nodesa,5\nkharkiv,-7\ndnipro,-1\nuzhhorod,4",
+        "description": "Weather CSV (city,temp): print the cities with temperatures below zero.",
+        "expected": "kyiv\nkharkiv\ndnipro",
+        "hint": "Use: awk -F',' '$2 < 0 {print $1}'"
+    },
+    {
+        "text": "https://github.com/user/repo\nhttps://docs.python.org/3/tutorial\nhttps://github.com/another/project\nhttps://stackoverflow.com/questions/123\nhttps://github.com/third/thing",
+        "description": "URL list: extract just the domain names (3rd \"/\"-separated field).",
+        "expected": "github.com\ndocs.python.org\ngithub.com\nstackoverflow.com\ngithub.com",
+        "hint": "Use: cut -d'/' -f3 - with / as delimiter, the domain is field 3"
+    },
+    {
+        "text": "alice@gmail.com\nbob@ukr.net\ncarol@gmail.com\ndave@proton.me\neve@gmail.com\nfrank@ukr.net",
+        "description": "Email list: count how many addresses each domain has, most popular first.",
+        "expected": "      3 gmail.com\n      2 ukr.net\n      1 proton.me",
+        "hint": "Chain: cut -d'@' -f2 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "name,score\nalice,91\nbob,67\ncarol,84\ndave,72",
+        "description": "CSV with header: skip the header and sort the data rows by score (2nd field) in descending numeric order.",
+        "expected": "alice,91\ncarol,84\ndave,72\nbob,67",
+        "hint": "Chain: tail -n +2 | sort -t',' -k2 -rn"
+    },
+    {
+        "text": "nginx 2.1\npostgres 8.4\nredis 1.2\nnode 5.7\nelasticsearch 12.3\ncron 0.1",
+        "description": "Memory usage (process percent): show the top 3 processes by memory, highest first.",
+        "expected": "elasticsearch 12.3\npostgres 8.4\nnode 5.7",
+        "hint": "Chain: sort -k2 -rn | head -3"
+    },
+    {
+        "text": "2024-03-01 09:14 ERROR timeout\n2024-03-01 11:02 ERROR oom\n2024-03-02 08:55 ERROR timeout\n2024-03-02 14:21 ERROR disk\n2024-03-02 19:03 ERROR timeout\n2024-03-03 07:48 ERROR oom",
+        "description": "Error log: count how many errors happened on each date (1st field), busiest day first.",
+        "expected": "      3 2024-03-02\n      2 2024-03-01\n      1 2024-03-03",
+        "hint": "Chain: cut -d' ' -f1 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "# Server configuration\nport=8080\n# Enable TLS\ntls=true\nhost=0.0.0.0\n# Workers\nworkers=4",
+        "description": "Config file: output only the real settings - remove every comment line (lines starting with \"#\").",
+        "expected": "port=8080\ntls=true\nhost=0.0.0.0\nworkers=4",
+        "hint": "Use: grep -v '^#'"
+    },
+    {
+        "text": "- [x] write spec\n- [ ] implement parser\n- [x] add tests\n- [ ] update docs\n- [ ] release v2",
+        "description": "Markdown checklist: count how many tasks are still unchecked (\"[ ]\").",
+        "expected": "3",
+        "hint": "Use: grep -c '\\[ \\]' - the brackets need escaping with backslashes"
+    },
+    {
+        "text": "alice,math,90\nalice,physics,85\nbob,math,70\nbob,physics,80\ncarol,math,95\ncarol,physics,75",
+        "description": "Grades CSV (name,subject,grade): compute the average of ALL grades (3rd field).",
+        "expected": "82.5",
+        "hint": "Use: awk -F',' '{s += $3} END {print s/NR}'"
+    },
+    {
+        "text": "GET /a 200 15ms\nPOST /b 200 320ms\nGET /c 200 8ms\nGET /d 200 540ms\nPUT /e 200 95ms",
+        "description": "Access log: find the slowest response time in milliseconds (4th field, just the number).",
+        "expected": "540",
+        "hint": "Chain: cut -d' ' -f4 | tr -d 'ms' | sort -n | tail -1"
+    },
+    {
+        "text": "/var/log/syslog\n/home/alice/notes.txt\n/var/log/nginx/access.log\n/etc/hosts\n/var/log/auth.log\n/tmp/build.log",
+        "description": "File list: show only the files ending in \".log\".",
+        "expected": "/var/log/nginx/access.log\n/var/log/auth.log\n/tmp/build.log",
+        "hint": "Use: grep '\\.log$' - escape the dot, anchor with $"
+    },
+    {
+        "text": "monday 1240\ntuesday 980\nwednesday 1430\nthursday 1100\nfriday 1670",
+        "description": "Daily backup sizes in MB: compute the total size of all backups (sum of the 2nd column).",
+        "expected": "6420",
+        "hint": "Use: awk '{sum += $2} END {print sum}'"
+    },
+    {
+        "text": "alice opened dashboard\nbob updated profile\nalice exported report\ncarol opened dashboard\nbob logged out\nalice logged out",
+        "description": "Activity log: print the sorted list of unique users (1st field).",
+        "expected": "alice\nbob\ncarol",
+        "hint": "Chain: cut -d' ' -f1 | sort -u"
+    },
+    {
+        "text": "GET 200\nPOST 201\nGET 404\nGET 200\nPOST 500\nGET 200\nDELETE 204\nGET 404",
+        "description": "Status codes (2nd field): rank them by frequency, most common first.",
+        "expected": "      3 200\n      2 404\n      1 201\n      1 204\n      1 500",
+        "hint": "Chain: cut -d' ' -f2 | sort | uniq -c | sort -rn"
+    },
+    {
+        "text": "alice 87\nbob 92\ncarol 78\ndave 95\neve 81\nfrank 89",
+        "description": "Leaderboard: print the names of the top 3 scorers, best first.",
+        "expected": "dave\nbob\nfrank",
+        "hint": "Chain: sort -k2 -rn | head -3 | cut -d' ' -f1"
+    },
+    {
+        "text": "web-1 healthy\nweb-2 unhealthy\ndb-1 healthy\ncache-1 unhealthy\nweb-3 healthy\nqueue-1 unhealthy",
+        "description": "Health checks: count the \"unhealthy\" services using a whole-word match (must not count \"healthy\").",
+        "expected": "3",
+        "hint": "Use: grep -cw unhealthy - combine -c (count) and -w (whole word)"
+    },
+    {
+        "text": "512 /var/log/syslog\n2048 /var/backups/db.tar.gz\n128 /etc/hosts\n4096 /var/backups/full.tar.gz\n256 /tmp/build.log",
+        "description": "Disk usage (size path): print the path (2nd field) of the largest file.",
+        "expected": "/var/backups/full.tar.gz",
+        "hint": "Chain: sort -k1 -rn | head -1 | awk '{print $2}'"
+    },
+    {
+        "text": "feature/login\nbugfix/crash\nfeature/search\nchore/deps\nfeature/export\nbugfix/timeout",
+        "description": "Git branches: count how many branches each prefix (text before \"/\") has, most common first.",
+        "expected": "      3 feature\n      2 bugfix\n      1 chore",
+        "hint": "Chain: cut -d'/' -f1 | sort | uniq -c | sort -rn"
+    }
+]

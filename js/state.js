@@ -8,6 +8,7 @@ export const state = {
     currentChallengeIndex: 0,
     currentText: '',
     selectedCommands: new Set(['grep', 'head', 'tail', 'sort', 'wc']),
+    practiceDifficulty: 'mixed', // 'single' | 'short' | 'long' | 'mixed'
     practiceStats: { solved: 0, attempted: 0, streak: 0, bestStreak: 0 },
     currentPracticeChallenge: null,
     challenges: {},
@@ -17,9 +18,13 @@ export const state = {
         intermediate: [],
         advanced: [],
         expert: [],
+        master: [],
+        realworld: [],
         sandbox: []
     }
 };
+
+export const LEVELS = ['beginner', 'intermediate', 'advanced', 'expert', 'master', 'realworld'];
 
 export function setState(key, value) {
     state[key] = value;
@@ -59,6 +64,7 @@ export function saveProgress() {
             bestStreak: state.practiceStats.bestStreak
         },
         selectedCommands: Array.from(state.selectedCommands),
+        practiceDifficulty: state.practiceDifficulty,
         currentLevel: state.currentLevel
     };
     try {
@@ -81,6 +87,8 @@ export function loadProgress() {
                     intermediate: data.completedChallenges.intermediate || [],
                     advanced: data.completedChallenges.advanced || [],
                     expert: data.completedChallenges.expert || [],
+                    master: data.completedChallenges.master || [],
+                    realworld: data.completedChallenges.realworld || [],
                     sandbox: data.completedChallenges.sandbox || []
                 };
             }
@@ -95,7 +103,11 @@ export function loadProgress() {
                 state.selectedCommands = new Set(data.selectedCommands);
             }
 
-            if (data.currentLevel) {
+            if (data.practiceDifficulty) {
+                state.practiceDifficulty = data.practiceDifficulty;
+            }
+
+            if (data.currentLevel && (LEVELS.includes(data.currentLevel) || data.currentLevel === 'sandbox')) {
                 state.currentLevel = data.currentLevel;
             }
 
@@ -114,6 +126,8 @@ export function resetProgress() {
         intermediate: [],
         advanced: [],
         expert: [],
+        master: [],
+        realworld: [],
         sandbox: []
     };
     state.practiceStats = { solved: 0, attempted: 0, streak: 0, bestStreak: 0 };

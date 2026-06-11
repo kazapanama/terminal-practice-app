@@ -1,9 +1,8 @@
 // UI/DOM manipulation functions
 
-import { state, markChallengeCompleted, isChallengeCompleted, getLevelProgress, saveProgress } from './state.js';
+import { state, LEVELS, markChallengeCompleted, isChallengeCompleted, getLevelProgress, saveProgress } from './state.js';
 import { executePipeline } from './commands.js';
-import { commandDefs, problemGenerators } from './problemGenerators.js';
-import { randInt } from './utils.js';
+import { commandDefs, generateProblem } from './problemGenerators.js';
 
 // DOM Elements
 let elements = {};
@@ -104,8 +103,26 @@ function setupPracticeMode() {
     elements.showAnswerBtn.classList.remove('hidden');
     elements.challengeModeTitle.textContent = 'Practice';
     initCommandCheckboxes();
+    initPracticeDifficulty();
     updatePracticeStats();
     generatePracticeProblem();
+}
+
+// Practice difficulty selector (single command / short pipes / long pipes / mixed)
+export function initPracticeDifficulty() {
+    document.querySelectorAll('.practice-difficulty-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.pd === state.practiceDifficulty);
+        if (!btn.dataset.bound) {
+            btn.dataset.bound = '1';
+            btn.addEventListener('click', () => {
+                state.practiceDifficulty = btn.dataset.pd;
+                saveProgress();
+                document.querySelectorAll('.practice-difficulty-btn').forEach(b =>
+                    b.classList.toggle('active', b === btn));
+                generatePracticeProblem();
+            });
+        }
+    });
 }
 
 // Update difficulty buttons to show progress
@@ -270,10 +287,10 @@ export function showSuccess(message = 'Correct! Great job!') {
                 loadChallenge();
             } else {
                 // Level complete! Try to advance to next difficulty
-                const levels = ['beginner', 'intermediate', 'advanced', 'expert'];
+                const levels = LEVELS;
                 const currentLevelIndex = levels.indexOf(state.currentLevel);
 
-                if (currentLevelIndex < levels.length - 1) {
+                if (currentLevelIndex >= 0 && currentLevelIndex < levels.length - 1) {
                     // Move to next difficulty level
                     const nextLevel = levels[currentLevelIndex + 1];
                     state.currentLevel = nextLevel;
@@ -308,8 +325,7 @@ export function runCommand() {
     elements.errorMessage.style.display = 'none';
 
     try {
-        const pipeline = cmdLine.split('|');
-        const result = executePipeline(state.currentText, pipeline);
+        const result = executePipeline(state.currentText, cmdLine);
 
         elements.outputText.textContent = result;
 
@@ -329,7 +345,7 @@ export function runCommand() {
                 }
             }
         } else if (state.currentMode === 'practice' && state.currentPracticeChallenge) {
-            const expectedResult = executePipeline(state.currentText, state.currentPracticeChallenge.solution.split('|'));
+            const expectedResult = state.currentPracticeChallenge.expected;
             if (result.trim() === expectedResult.trim()) {
                 state.practiceStats.solved++;
                 state.practiceStats.streak++;
@@ -396,25 +412,7 @@ export function generatePracticeProblem() {
     saveProgress();
     updatePracticeStats();
 
-    const commandList = Array.from(state.selectedCommands);
-    const selectedCmd = commandList[randInt(0, commandList.length - 1)];
-
-    let problem;
-    if (state.selectedCommands.size >= 2 && Math.random() < 0.3) {
-        const pipeProblems = [
-            'pipe_sort_uniq',
-            'pipe_sort_head',
-            'pipe_grep_wc',
-            'pipe_sort_uniq_sort',
-            'pipe_cut_sort'
-        ];
-        const pipeProblem = pipeProblems[randInt(0, pipeProblems.length - 1)];
-        problem = problemGenerators[pipeProblem]();
-    } else if (problemGenerators[selectedCmd]) {
-        problem = problemGenerators[selectedCmd]();
-    } else {
-        problem = problemGenerators.grep();
-    }
+    const problem = generateProblem(state.selectedCommands, state.practiceDifficulty);
 
     state.currentPracticeChallenge = problem;
     state.currentText = problem.text;
@@ -423,15 +421,11 @@ export function generatePracticeProblem() {
     updateStats(state.currentText);
 
     elements.challengeDesc.textContent = problem.description;
+    elements.expectedOutput.textContent = problem.expected;
 
-    const expectedResult = executePipeline(state.currentText, problem.solution.split('|'));
-    elements.expectedOutput.textContent = expectedResult;
-
-    if (problem.isPipe) {
-        elements.targetCommand.textContent = 'Pipes';
-    } else {
-        elements.targetCommand.textContent = selectedCmd;
-    }
+    elements.targetCommand.textContent = problem.isPipe
+        ? problem.cmds.join(' | ')
+        : problem.cmds[0];
 
     elements.outputText.textContent = '';
     elements.outputStats.textContent = '';
