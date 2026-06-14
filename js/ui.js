@@ -1,6 +1,6 @@
 // UI/DOM manipulation functions
 
-import { state, LEVELS, markChallengeCompleted, isChallengeCompleted, getLevelProgress, saveProgress } from './state.js';
+import { state, LEVELS, markChallengeCompleted, isChallengeCompleted, getLevelProgress, getFirstUncompletedIndex, saveProgress } from './state.js';
 import { executePipeline } from './commands.js';
 import { commandDefs, generateProblem } from './problemGenerators.js';
 
@@ -87,6 +87,8 @@ function setupChallengesMode() {
     elements.skipBtn.classList.add('hidden');
     elements.showAnswerBtn.classList.add('hidden');
     elements.challengeModeTitle.textContent = 'Challenge';
+    // Resume at the first uncompleted challenge of the saved level
+    state.currentChallengeIndex = getFirstUncompletedIndex(state.currentLevel);
     updateDifficultyButtons();
     renderChallengeGrid();
     loadChallenge();

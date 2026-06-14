@@ -47,6 +47,18 @@ export function isChallengeCompleted(level, index) {
     return state.completedChallenges[level].includes(index);
 }
 
+// Find the first uncompleted challenge index for a level.
+// Falls back to 0 if all are completed (or none exist).
+export function getFirstUncompletedIndex(level) {
+    const total = state.challenges[level]?.length || 0;
+    for (let i = 0; i < total; i++) {
+        if (!isChallengeCompleted(level, i)) {
+            return i;
+        }
+    }
+    return 0;
+}
+
 // Get completion stats for a level
 export function getLevelProgress(level) {
     const completed = state.completedChallenges[level].length;
