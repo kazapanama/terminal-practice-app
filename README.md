@@ -16,6 +16,8 @@ An interactive web app to learn and practice Linux text processing commands like
 - **Pipeline Inspector** - Click any stage of a pipeline to see its intermediate output
 - **Progressive Hints** - Which commands → the command shape with values hidden → the full solution. Solving after seeing the solution is marked as assisted
 - **Weak-spot Practice** - Per-command success is tracked; commands you often miss come up more often
+- **Terminal Feel** - ↑/↓ command history (kept between visits), Tab completes command names and lists a command's options, Ctrl+L clears the output, Esc clears the line
+- **Sandbox with your own text** - Edit the input of a sandbox task and experiment on your own data
 
 ## How to Run
 
@@ -97,6 +99,7 @@ term-app/
 │   ├── regex.js        # POSIX BRE/ERE -> JavaScript RegExp
 │   ├── utils.js        # Shell parsing, getopt, streams, helpers
 │   ├── hints.js        # Progressive hints derived from solutions
+│   ├── terminal.js     # History, Tab completion, keyboard shortcuts
 │   ├── feedback.js     # Output vs expected: line diff + tips
 │   ├── dataGenerators.js    # Randomized practice datasets
 │   └── problemGenerators.js # Templates + pipeline recipe composer
@@ -139,8 +142,9 @@ npm run generate-levels   # regenerate master/realworld data
 ## Progress
 
 Your progress is automatically saved including:
-- Completed challenges per level
+- Completed challenges (by stable id, so reordering challenges keeps progress), marked as assisted when solved after revealing the solution
+- Command history and edited sandbox texts
 - Practice mode statistics and best streak
 - Selected command and difficulty preferences
 
-Click "Reset Progress" on the landing page to start fresh.
+Click "Reset Progress" on the landing page twice to start fresh.

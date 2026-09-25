@@ -30,7 +30,9 @@ export const state = {
     progress: {},
     task: freshTask(),
     // Revealed hint steps for the task on screen
-    hintLevel: 0
+    hintLevel: 0,
+    // Sandbox input edited by the user: { 'sandbox-01': 'text' }
+    sandboxTexts: {}
 };
 
 export function resetTask() {
@@ -118,6 +120,7 @@ export function saveProgress() {
             bestStreak: state.practiceStats.bestStreak
         },
         commandStats: state.commandStats,
+        sandboxTexts: state.sandboxTexts,
         selectedCommands: Array.from(state.selectedCommands),
         practiceDifficulty: state.practiceDifficulty,
         currentLevel: state.currentLevel
@@ -160,6 +163,9 @@ export function loadProgress() {
     }
     if (data.commandStats && typeof data.commandStats === 'object') {
         state.commandStats = data.commandStats;
+    }
+    if (data.sandboxTexts && typeof data.sandboxTexts === 'object') {
+        state.sandboxTexts = data.sandboxTexts;
     }
     if (Array.isArray(data.selectedCommands)) {
         state.selectedCommands = new Set(data.selectedCommands);

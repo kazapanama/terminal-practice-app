@@ -13,8 +13,12 @@ import {
     skipPracticeProblem,
     newPracticeProblem,
     selectAllCommands,
-    deselectAllCommands
+    deselectAllCommands,
+    clearOutputPanel,
+    toggleInputEditor,
+    restoreSandboxText
 } from './ui.js';
+import { initTerminal } from './terminal.js';
 
 // Load challenge data from JSON files
 async function loadChallengeData() {
@@ -29,6 +33,29 @@ async function loadChallengeData() {
     }));
 }
 
+// A destructive button that asks for a second click instead of confirm()
+function initResetButton(btn) {
+    const label = btn.textContent;
+    let timer = null;
+    const disarm = () => {
+        clearTimeout(timer);
+        btn.classList.remove('armed');
+        btn.textContent = label;
+    };
+    btn.addEventListener('click', () => {
+        if (!btn.classList.contains('armed')) {
+            btn.classList.add('armed');
+            btn.textContent = 'Click again to erase all progress';
+            timer = setTimeout(disarm, 4000);
+            return;
+        }
+        disarm();
+        resetProgress();
+        location.reload();
+    });
+    btn.addEventListener('blur', disarm);
+}
+
 // Initialize event listeners
 function initEventListeners() {
     const el = getElements();
@@ -38,10 +65,13 @@ function initEventListeners() {
     el.practiceBtn.addEventListener('click', () => showAppPage('practice'));
     el.backBtn.addEventListener('click', showLandingPage);
 
-    // Command input
+    // Command line
     el.runBtn.addEventListener('click', runCommand);
-    el.commandInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') runCommand();
+    initTerminal({
+        input: el.commandInput,
+        help: el.terminalHelp,
+        onRun: runCommand,
+        onClear: clearOutputPanel
     });
 
     // Difficulty buttons
@@ -52,25 +82,20 @@ function initEventListeners() {
     // Navigation buttons
     el.prevBtn.addEventListener('click', () => goToChallenge(state.currentChallengeIndex - 1));
     el.nextBtn.addEventListener('click', () => goToChallenge(state.currentChallengeIndex + 1));
-
     el.hintBtn.addEventListener('click', showNextHint);
+
+    // Sandbox input editing
+    el.editInputBtn.addEventListener('click', toggleInputEditor);
+    el.restoreInputBtn.addEventListener('click', restoreSandboxText);
 
     // Practice mode buttons
     el.skipBtn.addEventListener('click', skipPracticeProblem);
-
     el.generateBtn.addEventListener('click', newPracticeProblem);
     el.selectAllBtn.addEventListener('click', selectAllCommands);
     el.deselectAllBtn.addEventListener('click', deselectAllCommands);
 
     const resetBtn = document.getElementById('reset-progress-btn');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
-                resetProgress();
-                location.reload();
-            }
-        });
-    }
+    if (resetBtn) initResetButton(resetBtn);
 }
 
 // Main initialization

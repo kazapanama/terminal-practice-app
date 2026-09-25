@@ -113,9 +113,14 @@
                             Words: <span id="word-count">0</span> |
                             Chars: <span id="char-count">0</span>
                         </div>
+                        <div class="panel-actions hidden" id="sandbox-actions">
+                            <button type="button" class="panel-btn" id="edit-input-btn">Edit text</button>
+                            <button type="button" class="panel-btn hidden" id="restore-input-btn">Restore original</button>
+                        </div>
                     </div>
                     <div class="panel-content">
                         <div class="text-display" id="input-text"></div>
+                        <textarea class="input-editor hidden" id="input-editor" aria-label="Input text" spellcheck="false"></textarea>
                     </div>
                 </div>
                 <div class="panel">
@@ -133,9 +138,10 @@
             <div class="command-section">
                 <div class="terminal-prompt">
                     <span class="prompt-symbol">$</span>
-                    <input type="text" class="command-input" id="command-input" placeholder="Enter your command (e.g., grep 'error' | head -5 | sort)" autocomplete="off">
+                    <input type="text" class="command-input" id="command-input" placeholder="Enter your command (e.g., grep 'error' | head -5 | sort)" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Command line" aria-describedby="terminal-help">
                     <button class="run-btn" id="run-btn">Run</button>
                 </div>
+                <div class="terminal-help" id="terminal-help"></div>
                 <div class="error-message" id="error-message" role="alert"></div>
                 <div class="warning-message" id="warning-message" role="status"></div>
                 <div class="feedback hidden" id="feedback" aria-live="polite"></div>
@@ -272,7 +278,7 @@
                 </div>
             </div>
 
-            <div class="success-message" id="success-message">
+            <div class="success-message" id="success-message" role="status" aria-live="polite">
                 Correct! Great job!
             </div>
         </div>

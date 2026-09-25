@@ -52,6 +52,11 @@ export function initElements() {
         pipelineSteps: document.getElementById('pipeline-steps'),
         warningMessage: document.getElementById('warning-message'),
         feedback: document.getElementById('feedback'),
+        terminalHelp: document.getElementById('terminal-help'),
+        sandboxActions: document.getElementById('sandbox-actions'),
+        editInputBtn: document.getElementById('edit-input-btn'),
+        restoreInputBtn: document.getElementById('restore-input-btn'),
+        inputEditor: document.getElementById('input-editor'),
         challengeModeTitle: document.getElementById('challenge-mode-title'),
         commandCheckboxes: document.getElementById('command-checkboxes'),
         generateBtn: document.getElementById('generate-btn'),
@@ -127,6 +132,8 @@ function setupPracticeMode() {
     elements.nextBtn.classList.add('hidden');
     elements.skipBtn.classList.remove('hidden');
     elements.challengeModeTitle.textContent = 'Practice';
+    closeInputEditor(false);
+    elements.sandboxActions.classList.add('hidden');
     initCommandCheckboxes();
     initPracticeDifficulty();
     updatePracticeStats();
@@ -153,13 +160,16 @@ export function goToChallenge(index) {
 export function initPracticeDifficulty() {
     document.querySelectorAll('.practice-difficulty-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.pd === state.practiceDifficulty);
+        btn.setAttribute('aria-pressed', String(btn.dataset.pd === state.practiceDifficulty));
         if (!btn.dataset.bound) {
             btn.dataset.bound = '1';
             btn.addEventListener('click', () => {
                 state.practiceDifficulty = btn.dataset.pd;
                 saveProgress();
-                document.querySelectorAll('.practice-difficulty-btn').forEach(b =>
-                    b.classList.toggle('active', b === btn));
+                document.querySelectorAll('.practice-difficulty-btn').forEach(b => {
+                    b.classList.toggle('active', b === btn);
+                    b.setAttribute('aria-pressed', String(b === btn));
+                });
                 newPracticeProblem();
             });
         }
@@ -173,6 +183,7 @@ export function updateDifficultyButtons() {
         const progress = getLevelProgress(level);
 
         btn.classList.toggle('active', level === state.currentLevel);
+        btn.setAttribute('aria-pressed', String(level === state.currentLevel));
 
         let progressSpan = btn.querySelector('.progress-indicator');
         if (!progressSpan) {
@@ -201,7 +212,8 @@ export function renderChallengeGrid() {
     grid.innerHTML = '';
 
     levelChallenges.forEach((_, index) => {
-        const box = document.createElement('div');
+        const box = document.createElement('button');
+        box.type = 'button';
         box.className = 'challenge-box';
         box.dataset.index = index;
         box.addEventListener('click', () => goToChallenge(index));
@@ -221,6 +233,12 @@ export function updateChallengeGrid() {
         box.classList.toggle('solved', status !== null);
         box.classList.toggle('assisted', status === 'assisted');
         box.textContent = status ? '' : String(i + 1);
+        const label = `Challenge ${i + 1}` +
+            (status === 'solved' ? ', solved' : status === 'assisted' ? ', solved with the solution shown' : '');
+        box.setAttribute('aria-label', label);
+        box.title = label;
+        if (i === state.currentChallengeIndex) box.setAttribute('aria-current', 'step');
+        else box.removeAttribute('aria-current');
     });
 }
 
@@ -430,10 +448,14 @@ export function loadChallenge() {
     cancelAdvance();
     resetTask();
     const challenge = currentChallenge();
+    const isSandbox = challenge.expected === null;
 
-    state.currentText = challenge.text;
+    closeInputEditor(false);
+    state.currentText = (isSandbox && state.sandboxTexts[challenge.id]) || challenge.text;
     displayText(state.currentText, elements.inputText);
     updateStats(state.currentText);
+    elements.sandboxActions.classList.toggle('hidden', !isSandbox);
+    elements.restoreInputBtn.classList.toggle('hidden', !(isSandbox && state.sandboxTexts[challenge.id]));
 
     elements.challengeDesc.textContent = challenge.description;
 
@@ -485,6 +507,58 @@ function showWarnings(warnings) {
     elements.warningMessage.textContent = warnings.join('\n');
 }
 
+export function clearOutputPanel() {
+    clearOutput();
+}
+
+// ---------------------------------------------------------------------------
+// Sandbox: edit the input text
+// ---------------------------------------------------------------------------
+
+function isEditingInput() {
+    return !elements.inputEditor.classList.contains('hidden');
+}
+
+function closeInputEditor(save) {
+    if (!isEditingInput()) return;
+    if (save) {
+        const challenge = currentChallenge();
+        const text = elements.inputEditor.value.replace(/\n+$/, '');
+        state.currentText = text;
+        if (text === challenge.text) delete state.sandboxTexts[challenge.id];
+        else state.sandboxTexts[challenge.id] = text;
+        saveProgress();
+        elements.restoreInputBtn.classList.toggle('hidden', !state.sandboxTexts[challenge.id]);
+        displayText(state.currentText, elements.inputText);
+        updateStats(state.currentText);
+        clearOutput();
+    }
+    elements.inputEditor.classList.add('hidden');
+    elements.inputText.classList.remove('hidden');
+    elements.editInputBtn.textContent = 'Edit text';
+}
+
+export function toggleInputEditor() {
+    if (isEditingInput()) {
+        closeInputEditor(true);
+        elements.commandInput.focus();
+        return;
+    }
+    elements.inputEditor.value = state.currentText;
+    elements.inputText.classList.add('hidden');
+    elements.inputEditor.classList.remove('hidden');
+    elements.editInputBtn.textContent = 'Done';
+    elements.inputEditor.focus();
+}
+
+export function restoreSandboxText() {
+    const challenge = currentChallenge();
+    delete state.sandboxTexts[challenge.id];
+    saveProgress();
+    closeInputEditor(false);
+    loadChallenge();
+}
+
 export function showError(msg) {
     elements.errorMessage.textContent = msg;
     elements.errorMessage.style.display = 'block';
@@ -494,6 +568,8 @@ export function runCommand() {
     const cmdLine = elements.commandInput.value.trim();
     if (!cmdLine) return;
 
+    // Unsaved sandbox edits apply to the run
+    if (isEditingInput()) closeInputEditor(true);
     clearOutput();
     state.task.tried = true;
     let run;

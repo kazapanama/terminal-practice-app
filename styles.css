@@ -927,3 +927,115 @@ body {
     color: #666;
     font-style: italic;
 }
+
+/* Keyboard focus */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid #6c9eff;
+    outline-offset: 2px;
+}
+
+/* Grid boxes are buttons */
+button.challenge-box {
+    font-family: inherit;
+    padding: 0;
+}
+
+/* Terminal help line under the prompt */
+.terminal-help {
+    margin-top: -5px;
+    font-size: 0.75rem;
+    color: #777;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Sandbox: editable input */
+.panel-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.panel-btn {
+    padding: 3px 10px;
+    background: transparent;
+    border: 1px solid #00ff88;
+    color: #00ff88;
+    border-radius: 3px;
+    font-family: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.panel-btn:hover {
+    background: #00ff88;
+    color: #1a1a2e;
+}
+
+.input-editor {
+    width: 100%;
+    height: 100%;
+    min-height: 260px;
+    resize: none;
+    background: #0d1b2a;
+    color: #eee;
+    border: 1px solid #0f3460;
+    border-radius: 5px;
+    padding: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* Reset button waiting for the confirming second click */
+.reset-btn.armed {
+    background: rgba(255, 107, 107, 0.15);
+    color: #ff6b6b;
+    border-color: #ff6b6b;
+}
+
+@media (max-width: 600px) {
+    .app-page {
+        padding: 12px;
+    }
+
+    .app-header {
+        gap: 10px;
+    }
+
+    .app-title {
+        font-size: 1.1rem;
+    }
+
+    .panel-header {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .stats {
+        gap: 8px;
+        margin-top: 0;
+    }
+
+    .panel-content {
+        height: 220px;
+    }
+
+    .terminal-prompt {
+        flex-wrap: wrap;
+    }
+
+    .command-input {
+        min-width: 0;
+    }
+
+    .reset-btn {
+        position: static;
+        margin-top: 30px;
+    }
+
+    .commands-grid {
+        grid-template-columns: 1fr;
+    }
+}
