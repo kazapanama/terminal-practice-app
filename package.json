@@ -6,6 +6,7 @@
         "start": "python -m http.server 8080",
         "generate-levels": "node scripts/generateLevels.mjs",
         "verify-levels": "node scripts/verifyLevels.mjs",
-        "test": "node scripts/testCommands.mjs"
+        "test": "node scripts/testCommands.mjs && node scripts/testGenerators.mjs && node scripts/verifyLevels.mjs",
+        "test:diff": "node scripts/diffTest.mjs"
     }
 }

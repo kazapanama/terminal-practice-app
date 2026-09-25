@@ -1,128 +1,170 @@
 [
     {
+        "id": "advanced-01",
         "text": "apple\norange\napple\nbanana\norange\napple",
         "description": "Sort and count, then sort by count descending.",
         "expected": "      3 apple\n      2 orange\n      1 banana",
+        "solution": "sort | uniq -c | sort -rn",
         "hint": "Chain: sort | uniq -c | sort -rn"
     },
     {
+        "id": "advanced-02",
         "text": "first line\nsecond line\nthird line\nfourth line",
         "description": "Show the last 2 lines in reverse order.",
         "expected": "fourth line\nthird line",
+        "solution": "tail -2 | tac",
         "hint": "Chain: tail -2 | tac"
     },
     {
+        "id": "advanced-03",
         "text": "red\ngreen\nblue\nyellow\npurple",
         "description": "Show lines in reverse order and take first 3.",
         "expected": "purple\nyellow\nblue",
+        "solution": "tac | head -3",
         "hint": "Chain: tac | head -3"
     },
     {
+        "id": "advanced-04",
         "text": "name,dept,salary\nalice,eng,75000\nbob,sales,60000\ncharlie,eng,80000",
         "description": "Extract dept column and sort unique values.",
         "expected": "dept\neng\nsales",
+        "solution": "cut -d',' -f2 | sort -u",
         "hint": "Chain: cut -d',' -f2 | sort -u"
     },
     {
+        "id": "advanced-05",
         "text": "a\nb\nc\nd\ne\nf\ng\nh",
         "description": "Show lines 3-6.",
         "expected": "c\nd\ne\nf",
+        "solution": "head -6 | tail -4",
         "hint": "Chain: head -6 | tail -4"
     },
     {
+        "id": "advanced-06",
         "text": "user1,admin,active\nuser2,guest,inactive\nuser3,admin,active\nuser4,guest,active",
         "description": "Find active admin users.",
         "expected": "user1,admin,active\nuser3,admin,active",
+        "solution": "grep 'admin,active'",
         "hint": "Use grep admin | grep active or grep 'admin,active'"
     },
     {
+        "id": "advanced-07",
         "text": "server1,active,100\nserver2,inactive,0\nserver3,active,75",
         "description": "Extract server and status, then grep active.",
         "expected": "server1,active\nserver3,active",
+        "solution": "cut -d',' -f1,2 | grep -w active",
         "hint": "Chain: cut -d',' -f1,2 | grep -w active"
     },
     {
+        "id": "advanced-08",
         "text": "alpha\nbeta\ngamma",
         "description": "Reverse lines then reverse characters.",
         "expected": "ammag\nateb\nahpla",
+        "solution": "tac | rev",
         "hint": "Chain: tac | rev"
     },
     {
+        "id": "advanced-09",
         "text": "apple:red:5:1.50\nbanana:yellow:12:0.75\ncherry:red:20:2.00\ngrape:purple:25:1.00",
         "description": "Find red fruits and extract name and price (fields 1 and 4).",
         "expected": "apple:1.50\ncherry:2.00",
+        "solution": "grep red | cut -d':' -f1,4",
         "hint": "Chain: grep red | cut -d':' -f1,4"
     },
     {
+        "id": "advanced-10",
         "text": "GET /index.html 200\nPOST /login 401\nGET /about.html 200\nGET /admin 403\nPOST /api 500",
         "description": "Find non-200 responses, count them.",
         "expected": "3",
+        "solution": "grep -v 200 | wc -l",
         "hint": "Chain: grep -v 200 | wc -l"
     },
     {
+        "id": "advanced-11",
         "text": "host1:web:running:80\nhost2:db:stopped:3306\nhost3:web:running:8080\nhost4:cache:running:6379",
         "description": "Find running services, extract host and port.",
         "expected": "host1:80\nhost3:8080\nhost4:6379",
+        "solution": "grep running | cut -d':' -f1,4",
         "hint": "Chain: grep running | cut -d':' -f1,4"
     },
     {
+        "id": "advanced-12",
         "text": "hello world\nHELLO WORLD\nhello WORLD\nHELLO world",
         "description": "Convert to lowercase, sort unique.",
         "expected": "hello world",
+        "solution": "tr 'A-Z' 'a-z' | sort -u",
         "hint": "Chain: tr 'A-Z' 'a-z' | sort -u"
     },
     {
+        "id": "advanced-13",
         "text": "A B C\nD E F\nG H I",
         "description": "Convert to lowercase, replace spaces with commas.",
         "expected": "a,b,c\nd,e,f\ng,h,i",
+        "solution": "tr 'A-Z' 'a-z' | tr ' ' ','",
         "hint": "Chain: tr 'A-Z' 'a-z' | tr ' ' ','"
     },
     {
+        "id": "advanced-14",
         "text": "alpha beta gamma\ndelta epsilon zeta\neta theta iota",
         "description": "Extract second word from each line, sort.",
         "expected": "beta\nepsilon\ntheta",
+        "solution": "cut -d' ' -f2 | sort",
         "hint": "Chain: cut -d' ' -f2 | sort"
     },
     {
+        "id": "advanced-15",
         "text": "apple,fruit,red\ncarrot,vegetable,orange\nbanana,fruit,yellow\nbroccoli,vegetable,green",
         "description": "Find fruits, extract name and color.",
         "expected": "apple,red\nbanana,yellow",
+        "solution": "grep fruit | cut -d',' -f1,3",
         "hint": "Chain: grep fruit | cut -d',' -f1,3"
     },
     {
+        "id": "advanced-16",
         "text": "Monday 10\nTuesday 15\nWednesday 8\nThursday 20\nFriday 12",
         "description": "Sort by number descending, show top 3 days.",
         "expected": "Thursday 20\nTuesday 15\nFriday 12",
+        "solution": "sort -t' ' -k2 -rn | head -3",
         "hint": "Chain: sort -t' ' -k2 -rn | head -3"
     },
     {
+        "id": "advanced-17",
         "text": "process1,high,running\nprocess2,low,stopped\nprocess3,high,running\nprocess4,medium,running\nprocess5,high,stopped",
         "description": "Find high priority running processes.",
         "expected": "process1,high,running\nprocess3,high,running",
+        "solution": "grep high | grep running",
         "hint": "Chain: grep high | grep running"
     },
     {
+        "id": "advanced-18",
         "text": "server1 cpu=45%\nserver2 cpu=80%\nserver3 cpu=30%\nserver1 cpu=50%\nserver2 cpu=85%\nserver1 cpu=55%",
         "description": "Count entries per server, sorted by count descending.",
         "expected": "      3 server1\n      2 server2\n      1 server3",
+        "solution": "cut -d' ' -f1 | sort | uniq -c | sort -rn",
         "hint": "Chain: cut -d' ' -f1 | sort | uniq -c | sort -rn"
     },
     {
+        "id": "advanced-19",
         "text": "user:alice:active:admin\nuser:bob:inactive:guest\nuser:charlie:active:admin\nuser:diana:active:guest",
         "description": "Find active admins, extract username (field 2).",
         "expected": "alice\ncharlie",
+        "solution": "grep active | grep admin | cut -d':' -f2",
         "hint": "Chain: grep active | grep admin | cut -d':' -f2"
     },
     {
+        "id": "advanced-20",
         "text": "2024-01-15 ERROR disk full\n2024-01-15 INFO started\n2024-01-16 ERROR memory\n2024-01-16 ERROR network\n2024-01-17 INFO done",
         "description": "Extract dates with ERROR, show unique dates.",
         "expected": "2024-01-15\n2024-01-16",
+        "solution": "grep ERROR | cut -d' ' -f1 | sort -u",
         "hint": "Chain: grep ERROR | cut -d' ' -f1 | sort -u"
     },
     {
+        "id": "advanced-21",
         "text": "commit1,alice,add feature\ncommit2,bob,fix bug\ncommit3,alice,update docs\ncommit4,charlie,add test\ncommit5,alice,fix typo",
         "description": "Count commits per author, sorted.",
-        "expected": "      3 alice\n      1 bob\n      1 charlie",
+        "expected": "      3 alice\n      1 charlie\n      1 bob",
+        "solution": "cut -d',' -f2 | sort | uniq -c | sort -rn",
         "hint": "Chain: cut -d',' -f2 | sort | uniq -c | sort -rn"
     }
 ]

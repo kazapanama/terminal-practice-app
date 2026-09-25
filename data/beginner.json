@@ -1,44 +1,58 @@
 [
     {
+        "id": "beginner-01",
         "text": "apple\nbanana\ncherry\ndate\nelderberry\nfig\ngrape",
         "description": "Display only the first 3 lines of this fruit list.",
         "expected": "apple\nbanana\ncherry",
+        "solution": "head -3",
         "hint": "Use the head command with -n or just a number"
     },
     {
+        "id": "beginner-02",
         "text": "one\ntwo\nthree\nfour\nfive\nsix\nseven",
         "description": "Display the last 3 lines.",
         "expected": "five\nsix\nseven",
+        "solution": "tail -3",
         "hint": "Use the tail command with -n or a number"
     },
     {
+        "id": "beginner-03",
         "text": "error: file not found\ninfo: starting process\nerror: connection failed\ndebug: checking status\nerror: timeout occurred\ninfo: process complete",
         "description": "Find all lines containing 'error'.",
         "expected": "error: file not found\nerror: connection failed\nerror: timeout occurred",
+        "solution": "grep error",
         "hint": "Use grep with the pattern 'error'"
     },
     {
+        "id": "beginner-04",
         "text": "banana\napple\ncherry\napple\ndate\nbanana\napple",
         "description": "Sort these fruits alphabetically.",
         "expected": "apple\napple\napple\nbanana\nbanana\ncherry\ndate",
+        "solution": "sort",
         "hint": "Use the sort command"
     },
     {
+        "id": "beginner-05",
         "text": "5\n3\n8\n1\n9\n2\n7",
         "description": "Sort these numbers in numeric order.",
         "expected": "1\n2\n3\n5\n7\n8\n9",
+        "solution": "sort -n",
         "hint": "Use sort -n for numeric sorting"
     },
     {
+        "id": "beginner-06",
         "text": "hello world\nthis is a test\nlinux commands are fun\npractice makes perfect",
         "description": "Count the total number of lines.",
         "expected": "4",
+        "solution": "wc -l",
         "hint": "Use wc with the -l flag"
     },
     {
+        "id": "beginner-07",
         "text": "one two three\nfour five six\nseven eight nine",
         "description": "Count the total number of words.",
         "expected": "9",
+        "solution": "wc -w",
         "hint": "Use wc with the -w flag"
     }
 ]

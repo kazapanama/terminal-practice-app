@@ -1,10 +1,11 @@
 // Smoke tests for command implementations.
 // Run: node scripts/testCommands.mjs
 
-import { executePipeline } from '../js/commands.js';
+import { executePipeline, runPipeline } from '../js/commands.js';
 
 let pass = 0, fail = 0;
 
+// `expected` is the exact output, or a RegExp the error message must match
 function t(name, input, cmdLine, expected) {
     let actual;
     try {
@@ -12,7 +13,10 @@ function t(name, input, cmdLine, expected) {
     } catch (e) {
         actual = `<ERROR: ${e.message}>`;
     }
-    if (actual === expected) {
+    const ok = expected instanceof RegExp
+        ? actual.startsWith('<ERROR: ') && expected.test(actual)
+        : actual === expected;
+    if (ok) {
         pass++;
     } else {
         fail++;
@@ -20,6 +24,24 @@ function t(name, input, cmdLine, expected) {
         console.log(`  cmd:      ${cmdLine}`);
         console.log(`  expected: ${JSON.stringify(expected)}`);
         console.log(`  actual:   ${JSON.stringify(actual)}`);
+    }
+}
+
+// Asserts that a warning (shell expansion, stray backslash...) is reported
+function w(name, input, cmdLine, pattern) {
+    let warnings;
+    try {
+        warnings = runPipeline(input, cmdLine).warnings;
+    } catch (e) {
+        warnings = [`<ERROR: ${e.message}>`];
+    }
+    if (warnings.some(x => pattern.test(x))) {
+        pass++;
+    } else {
+        fail++;
+        console.log(`FAIL: ${name}`);
+        console.log(`  cmd:      ${cmdLine}`);
+        console.log(`  warnings: ${JSON.stringify(warnings)}`);
     }
 }
 
@@ -98,7 +120,16 @@ t('sed -n print range', 'a\nb\nc\nd', "sed -n '2,3p'", 'b\nc');
 t('sed -n print last', 'a\nb\nc', "sed -n '$p'", 'c');
 t('sed -n print match', logs, "sed -n '/ERROR/p'", 'ERROR disk full\nERROR timeout');
 t('sed ampersand', 'cat', "sed 's/cat/[&]/'", '[cat]');
-t('sed backreference', 'john smith', "sed 's/(\\w+) (\\w+)/\\2 \\1/'", 'smith john');
+t('sed -E backreference', 'john smith', "sed -E 's/(\\w+) (\\w+)/\\2 \\1/'", 'smith john');
+t('sed BRE groups', 'john smith', "sed 's/\\(\\w*\\) \\(\\w*\\)/\\2 \\1/'", 'smith john');
+t('sed BRE: \\2 without groups', 'john smith', "sed 's/(\\w+) (\\w+)/\\2 \\1/'", /invalid reference \\2/);
+t('sed address + s', 'a\na\na', "sed '2s/a/B/'", 'a\nB\na');
+t('sed several commands', 'a\nb\nc', "sed -n '1p;3p'", 'a\nc');
+t('sed -e twice', 'a b\nc d', "sed -e 's/ /_/' -e '1d'", 'c_d');
+t('sed negated address', 'a\nb\nc', "sed '2!d'", 'b');
+t('sed regex range', 'x\nstart\ny\nend\nz', "sed '/start/,/end/d'", 'x\nz');
+t('sed nth occurrence', 'a a a', "sed 's/a/X/2'", 'a X a');
+t('sed unsupported command', 'a', "sed 'y/a/b/'", /not supported/);
 t('sed prefix', 'a\nb', "sed 's/^/- /'", '- a\n- b');
 
 // awk
@@ -125,6 +156,64 @@ t('pipe freq', 'a\nb\na\na\nb', 'sort | uniq -c | sort -rn', '      3 a\n      2
 t('pipe top', nums, 'sort -n | head -2', '3\n5');
 t('pipe grep wc', logs, 'grep ERROR | wc -l', '2');
 t('pipe header skip', 'name,dept\nalice,eng\nbob,sales', "tail -n +2 | cut -d',' -f2", 'eng\nsales');
+
+// regex dialects: BRE by default, ERE with -E
+t('grep BRE: | is literal', 'a|b\na\nb', "grep 'a|b'", 'a|b');
+t('grep BRE: \\| alternation', 'a\nb\nc', "grep 'a\\|b'", 'a\nb');
+t('grep BRE: + is literal', 'a+\naa', "grep 'a+'", 'a+');
+t('grep POSIX class', 'x1\ny', "grep '[[:digit:]]'", 'x1');
+t('grep class outside brackets', 'x', "grep '[:digit:]'", /character class syntax/);
+t('grep BRE interval', 'aa\na', "grep 'a\\{2\\}'", 'aa');
+t('grep -x', 'apple\napple pie', 'grep -x apple', 'apple');
+t('grep -F', 'a.c\nabc', "grep -F 'a.c'", 'a.c');
+t('grep -o', 'a1b22', "grep -o '[0-9]*'", '1\n22');
+t('grep -P digits', 'a1\nb', "grep -P '\\d'", 'a1');
+t('grep -e twice', 'a\nb\nc', 'grep -e a -e c', 'a\nc');
+t('grep \\d matches a literal d', 'd1\n2', "grep '\\d'", 'd1');
+w('grep \\d warning', 'd1', "grep '\\d'", /stray \\ before d/);
+
+// streams: empty input, trailing newlines
+t('wc -l of nothing', 'abc', 'grep zzz | wc -l', '0');
+t('wc -c counts the newline', 'abc', 'wc -c', '4');
+t('wc default padding', 'a b\nc', 'wc', '      2       3       6');
+t('uniq -c of nothing', 'abc', 'grep zzz | uniq -c', '');
+t('awk END NR of nothing', 'abc', "grep zzz | awk 'END {print NR}'", '0');
+t('tr newline to comma', 'a\nb', "tr '\\n' ','", 'a,b,');
+
+// sort: byte order and GNU tie-breaking
+t('sort C locale', 'b\nB\na', 'sort', 'B\na\nb');
+t('sort -f', 'b\nB\na', 'sort -f', 'a\nB\nb');
+t('sort -rn ties reversed', '1 b\n1 a\n2 c', 'sort -rn', '2 c\n1 b\n1 a');
+t('sort -k2,2 -k1', 'b 1\na 1\nc 0', 'sort -k2,2 -k1', 'c 0\na 1\nb 1');
+t('sort -u by key', 'a 1\nb 1\nc 2', 'sort -u -k2,2', 'a 1\nc 2');
+t('sort multi-char tab', 'a', "sort -t'ab'", /multi-character tab/);
+
+// unsupported options fail loudly instead of being ignored
+t('grep -A unsupported', 'a', 'grep -A1 a', /invalid option -- 'A'/);
+t('sort -h unsupported', 'a', 'sort -h', /invalid option -- 'h'/);
+t('file operand', 'a', 'grep a file.txt', /No such file/);
+t('awk function unsupported', 'a', "awk '{print toupper($1)}'", /toupper\(\) is not supported/);
+t('awk arrays unsupported', 'a', "awk '{c[$1]++}'", /arrays/);
+t('unknown command', 'a', 'ls', /command not found/);
+t('redirect unsupported', 'a', 'sort > out.txt', /not supported/);
+t('empty pipe stage', 'a', 'sort | | uniq', /syntax error/);
+
+// shell behaviour
+t('double-quoted $1 is expanded by the shell', 'a b', 'awk "{print $1}"', 'a b');
+w('double-quoted $1 warning', 'a b', 'awk "{print $1}"', /expanded by the shell/);
+t('backslash-escaped space', 'a b\nab', 'grep a\\ b', 'a b');
+t("ANSI-C quoting $'\\t'", 'a\tb', "cut -d$'\\t' -f2", 'b');
+
+// awk prints numbers with %.6g
+t('awk %.6g rounds ties to even', '1234567.5', "awk '{print $1 / 3}'", '411522');
+t('awk exponent', '1234567.5', "awk '{print $1 * 1}'", '1.23457e+06');
+
+// pipeline inspector data
+{
+    const r = runPipeline('b\na\nb', 'sort | uniq -c');
+    if (r.steps.length === 2 && r.steps[0].output === 'a\nb\nb' && r.steps[1].command === 'uniq -c') pass++;
+    else { fail++; console.log('FAIL: runPipeline steps', JSON.stringify(r.steps)); }
+}
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -31,21 +31,39 @@ Then open `http://localhost:8080` in your browser.
 
 | Command | Description | Examples |
 |---------|-------------|----------|
-| `grep` | Search for patterns | `grep -i`, `-v`, `-c`, `-n`, `-w` (whole word), `-o`, `-E "a\|b"`, `^anchor$` |
+| `grep` | Search for patterns | `grep -i`, `-v`, `-c`, `-n`, `-w`, `-x`, `-o`, `-F`, `-m N`, `-e P`, `-E "a\|b"`, `-P '\d'`, `[[:digit:]]` |
 | `head` | First N lines/chars | `head -5`, `head -n 10`, `head -c 20` |
 | `tail` | Last N lines / from line N | `tail -3`, `tail -n 5`, `tail -n +2` (skip header) |
-| `sort` | Sort lines | `sort -n`, `-r`, `-rn`, `-u`, `-f`, `sort -t',' -k3 -rn`, `sort -k2 -n` |
+| `sort` | Sort lines (byte order, as with `LC_ALL=C`) | `sort -n`, `-r`, `-u`, `-f`, `-b`, `-s`, `sort -t',' -k3 -rn`, `sort -k2,2 -k1`, `sort -k3n` |
 | `uniq` | Filter adjacent duplicates | `uniq -c`, `-d`, `-u`, `-i` (ignore case) |
 | `wc` | Count lines/words/chars | `wc -l`, `wc -w`, `wc -c` |
 | `cut` | Extract fields/chars | `cut -d',' -f1,3`, `cut -d':' -f2-` (open range), `cut -c1-5` |
 | `tr` | Translate characters | `tr 'a-z' 'A-Z'`, `tr '[:lower:]' '[:upper:]'`, `tr -d '0-9'`, `tr -s ' '` |
-| `sed` | Stream editor | `s/old/new/g`, `s\|/a\|/b\|`, `s/x/[&]/`, `s/(a) (b)/\2 \1/`, `/pat/d`, `2,4d`, `-n '2,4p'` |
+| `sed` | Stream editor | `s/old/new/g`, `s/a/b/2`, `s\|/a\|/b\|`, `s/x/[&]/`, `-E 's/(a) (b)/\2 \1/'`, `/pat/d`, `2,4s/a/b/`, `-n '1p;$p'`, `/a/,/b/d`, `3q`, `=` |
 | `awk` | Field processing | `'{print $1}'`, `-F','`, `$NF`, `NR`, `NF`, `'$3 > 100'`, `'{s+=$1} END {print s}'` |
 | `nl` | Number lines | `nl` |
 | `paste` | Merge/join lines | `paste -sd','` |
 | `rev` | Reverse each line | `rev` |
 | `tac` | Reverse line order | `tac` |
-| `cat` | Pass through / number lines | `cat`, `cat -n` |
+| `cat` | Pass through / number lines | `cat`, `cat -n`, `cat -b`, `cat -s` |
+
+## How close is this to a real terminal?
+
+The engine is checked against real bash + GNU grep/sed/gawk/coreutils (`npm run test:diff`, also run in CI):
+every challenge solution, hundreds of generated practice problems and ~130 edge cases must produce
+byte-identical output. In particular:
+
+- **Regex dialects are real**: `grep`/`sed` use basic regex (BRE) unless `-E` is given, so
+  `grep 'a|b'` matches a literal `a|b` and `sed 's/(x)/\1/'` fails exactly like in Linux.
+  POSIX classes (`[[:digit:]]`) work; Perl syntax (`\d`) only with `grep -P`.
+- **Streams end with a newline** like a real pipe: `grep nothing | wc -l` prints `0`,
+  `tr '\n' ','` leaves a trailing comma, `wc -c` counts newlines.
+- **Shell quoting**: single/double quotes, `\` escapes, `$'\t'`; `$1` inside double quotes is
+  expanded by the shell to nothing (with a warning), just like in bash.
+- **Unsupported options fail loudly** (`grep: invalid option -- 'A' (not supported in this trainer)`)
+  instead of being silently ignored. Commands have no files — they read the Input panel.
+- `sort` uses byte order (`LC_ALL=C`): uppercase sorts before lowercase. A desktop
+  with `en_US.UTF-8` would interleave cases; use `sort -f` to ignore case.
 
 ## Pipes
 
@@ -69,15 +87,20 @@ term-app/
 │   ├── app.js          # Main initialization
 │   ├── state.js        # State management & localStorage
 │   ├── ui.js           # UI functions
-│   ├── commands.js     # Command implementations (incl. mini-awk & sed engine)
-│   ├── utils.js        # Utility functions
+│   ├── commands.js     # Command implementations + pipeline runner
+│   ├── awk.js          # awk subset
+│   ├── sed.js          # sed subset (addresses, s/d/p/q/=)
+│   ├── regex.js        # POSIX BRE/ERE -> JavaScript RegExp
+│   ├── utils.js        # Shell parsing, getopt, streams, helpers
 │   ├── dataGenerators.js    # Randomized practice datasets
 │   └── problemGenerators.js # Templates + pipeline recipe composer
 ├── scripts/
 │   ├── testCommands.mjs     # Unit tests for command implementations
 │   ├── testGenerators.mjs   # Stress tests for problem generators
 │   ├── generateLevels.mjs   # Builds master/realworld levels (expected outputs computed by the engine)
-│   └── verifyLevels.mjs     # Verifies challenge data against the engine
+│   ├── verifyLevels.mjs     # Every challenge: unique id + solution reproduces expected
+│   ├── diffTest.mjs         # Engine vs real bash/GNU tools
+│   └── diffCases.mjs        # Edge cases for the differential test
 └── data/
     ├── beginner.json
     ├── intermediate.json
@@ -100,8 +123,8 @@ term-app/
 ## Development
 
 ```bash
-npm test                  # run command implementation tests
-node scripts/testGenerators.mjs   # stress-test practice generators
+npm test                  # command tests + generator stress test + challenge data check
+npm run test:diff         # compare the engine with real bash (needs bash; Git Bash works on Windows)
 npm run verify-levels     # check challenge data against the engine
 npm run generate-levels   # regenerate master/realworld data
 ```

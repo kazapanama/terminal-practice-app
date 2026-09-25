@@ -150,6 +150,9 @@
                         <code>grep -n "pattern"</code> (show line numbers)<br>
                         <code>grep -w "word"</code> (whole word only)<br>
                         <code>grep -E "a|b"</code> (extended regex OR)<br>
+                        <code>grep 'a\|b'</code> (same in basic regex)<br>
+                        <code>grep '[[:digit:]]'</code> (POSIX class; <code>\d</code> needs <code>-P</code>)<br>
+                        <code>grep -x "line"</code> / <code>grep -F "a.b"</code> (whole line / no regex)<br>
                         <code>grep "^start"</code> / <code>grep "end$"</code> (anchors)
                     </div>
                     <div class="command-card">
@@ -165,17 +168,18 @@
                         <code>wc</code> (all counts)<br>
                         <code>wc -l</code> (lines only)<br>
                         <code>wc -w</code> (words only)<br>
-                        <code>wc -c</code> (characters only)
+                        <code>wc -c</code> (bytes, including newlines)
                     </div>
                     <div class="command-card">
                         <h4>sort</h4>
                         <p>Sort lines alphabetically/numerically</p>
-                        <code>sort</code> (alphabetical)<br>
+                        <code>sort</code> (byte order, like LC_ALL=C: A-Z before a-z)<br>
                         <code>sort -n</code> (numeric)<br>
                         <code>sort -r</code> (reverse)<br>
                         <code>sort -u</code> (unique only)<br>
                         <code>sort -f</code> (ignore case)<br>
-                        <code>sort -t',' -k2</code> (by field 2, comma-delimited)
+                        <code>sort -t',' -k2,2</code> (by field 2 only, comma-delimited)<br>
+                        <code>sort -k3n</code> (numeric key: field 3 to end of line)
                     </div>
                     <div class="command-card">
                         <h4>uniq</h4>
@@ -225,7 +229,10 @@
                         <code>sed 's/old/new/g'</code> (all matches)<br>
                         <code>sed 's|/a|/b|'</code> (any delimiter)<br>
                         <code>sed 's/cat/[&amp;]/'</code> (&amp; = the match)<br>
-                        <code>sed 's/(a+) (b+)/\2 \1/'</code> (groups)<br>
+                        <code>sed -E 's/(a+) (b+)/\2 \1/'</code> (groups)<br>
+                        <code>sed 's/\(a*\) \(b*\)/\2 \1/'</code> (groups without -E)<br>
+                        <code>sed '2,4s/a/b/'</code> (only on lines 2-4)<br>
+                        <code>sed -n '1p;$p'</code> (several commands)<br>
                         <code>sed '/pattern/d'</code> (delete matching)<br>
                         <code>sed '2d'</code>, <code>sed '2,4d'</code> (delete lines)<br>
                         <code>sed -n '2,4p'</code> (print only lines 2-4)
