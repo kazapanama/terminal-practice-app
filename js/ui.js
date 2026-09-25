@@ -1,6 +1,9 @@
 // UI/DOM manipulation functions
 
-import { state, LEVELS, markChallengeCompleted, isChallengeCompleted, getLevelProgress, getFirstUncompletedIndex, saveProgress } from './state.js';
+import {
+    state, LEVELS, resetTask, currentChallenge, markChallengeCompleted, challengeStatus,
+    getLevelProgress, getFirstUncompletedIndex, findUncompletedIndex, recordPracticeResult, saveProgress
+} from './state.js';
 import { executePipeline } from './commands.js';
 import { commandDefs, generateProblem } from './problemGenerators.js';
 
@@ -59,7 +62,26 @@ export function getElements() {
     return elements;
 }
 
+// Pending "go to the next task" timer after a correct answer. Anything that
+// changes the task on screen cancels it, so it can never fire twice or late.
+let advanceTimer = null;
+let successTimer = null;
+
+function cancelAdvance() {
+    clearTimeout(advanceTimer);
+    advanceTimer = null;
+}
+
+function scheduleAdvance(fn, delay) {
+    cancelAdvance();
+    advanceTimer = setTimeout(() => {
+        advanceTimer = null;
+        fn();
+    }, delay);
+}
+
 export function showLandingPage() {
+    cancelAdvance();
     elements.landingPage.classList.remove('hidden');
     elements.appPage.classList.add('hidden');
     state.currentMode = null;
@@ -87,11 +109,7 @@ function setupChallengesMode() {
     elements.skipBtn.classList.add('hidden');
     elements.showAnswerBtn.classList.add('hidden');
     elements.challengeModeTitle.textContent = 'Challenge';
-    // Resume at the first uncompleted challenge of the saved level
-    state.currentChallengeIndex = getFirstUncompletedIndex(state.currentLevel);
-    updateDifficultyButtons();
-    renderChallengeGrid();
-    loadChallenge();
+    selectLevel(state.currentLevel);
 }
 
 function setupPracticeMode() {
@@ -110,6 +128,22 @@ function setupPracticeMode() {
     generatePracticeProblem();
 }
 
+// Switch to a level and resume at its first uncompleted challenge
+export function selectLevel(level) {
+    state.currentLevel = level;
+    state.currentChallengeIndex = getFirstUncompletedIndex(level);
+    saveProgress();
+    renderChallengeGrid();
+    loadChallenge();
+}
+
+export function goToChallenge(index) {
+    const total = state.challenges[state.currentLevel]?.length || 0;
+    if (index < 0 || index >= total) return;
+    state.currentChallengeIndex = index;
+    loadChallenge();
+}
+
 // Practice difficulty selector (single command / short pipes / long pipes / mixed)
 export function initPracticeDifficulty() {
     document.querySelectorAll('.practice-difficulty-btn').forEach(btn => {
@@ -121,7 +155,7 @@ export function initPracticeDifficulty() {
                 saveProgress();
                 document.querySelectorAll('.practice-difficulty-btn').forEach(b =>
                     b.classList.toggle('active', b === btn));
-                generatePracticeProblem();
+                newPracticeProblem();
             });
         }
     });
@@ -133,10 +167,8 @@ export function updateDifficultyButtons() {
         const level = btn.dataset.level;
         const progress = getLevelProgress(level);
 
-        // Update active state
         btn.classList.toggle('active', level === state.currentLevel);
 
-        // Add or update progress indicator
         let progressSpan = btn.querySelector('.progress-indicator');
         if (!progressSpan) {
             progressSpan = document.createElement('span');
@@ -146,11 +178,7 @@ export function updateDifficultyButtons() {
 
         if (progress.total > 0 && level !== 'sandbox') {
             progressSpan.textContent = ` (${progress.completed}/${progress.total})`;
-            if (progress.completed === progress.total) {
-                btn.classList.add('completed');
-            } else {
-                btn.classList.remove('completed');
-            }
+            btn.classList.toggle('completed', progress.completed === progress.total);
         } else {
             progressSpan.textContent = '';
         }
@@ -171,41 +199,23 @@ export function renderChallengeGrid() {
         const box = document.createElement('div');
         box.className = 'challenge-box';
         box.dataset.index = index;
-
-        // Check if solved
-        if (isChallengeCompleted(state.currentLevel, index)) {
-            box.classList.add('solved');
-        } else {
-            box.textContent = index + 1;
-        }
-
-        // Mark active
-        if (index === state.currentChallengeIndex) {
-            box.classList.add('active');
-        }
-
-        // Click handler
-        box.addEventListener('click', () => {
-            state.currentChallengeIndex = index;
-            loadChallenge();
-        });
-
+        box.addEventListener('click', () => goToChallenge(index));
         grid.appendChild(box);
     });
+    updateChallengeGrid();
 }
 
-// Update single box in grid (for performance)
-export function updateChallengeGridBox(index) {
+// Refresh solved/active state of the grid boxes
+export function updateChallengeGrid() {
     const grid = document.getElementById('challenge-grid');
     if (!grid) return;
 
-    const boxes = grid.querySelectorAll('.challenge-box');
-    boxes.forEach((box, i) => {
+    grid.querySelectorAll('.challenge-box').forEach((box, i) => {
+        const status = challengeStatus(state.currentLevel, i);
         box.classList.toggle('active', i === state.currentChallengeIndex);
-        if (isChallengeCompleted(state.currentLevel, i)) {
-            box.classList.add('solved');
-            box.textContent = '';
-        }
+        box.classList.toggle('solved', status !== null);
+        box.classList.toggle('assisted', status === 'assisted');
+        box.textContent = status ? '' : String(i + 1);
     });
 }
 
@@ -228,11 +238,19 @@ export function updateStats(text) {
     elements.charCount.textContent = text.length;
 }
 
+function clearOutput() {
+    elements.outputText.textContent = '';
+    elements.outputStats.textContent = '';
+    elements.errorMessage.style.display = 'none';
+}
+
 export function loadChallenge() {
     const levelChallenges = state.challenges[state.currentLevel];
     if (!levelChallenges || levelChallenges.length === 0) return;
 
-    const challenge = levelChallenges[state.currentChallengeIndex];
+    cancelAdvance();
+    resetTask();
+    const challenge = currentChallenge();
 
     state.currentText = challenge.text;
     displayText(state.currentText, elements.inputText);
@@ -240,79 +258,47 @@ export function loadChallenge() {
 
     elements.challengeDesc.textContent = challenge.description;
 
-    // Show completion status in challenge counter
-    const isCompleted = isChallengeCompleted(state.currentLevel, state.currentChallengeIndex);
-    const completedMark = isCompleted ? ' \u2713' : '';
+    const completedMark = challengeStatus(state.currentLevel, state.currentChallengeIndex) ? ' ✓' : '';
     elements.challengeNum.textContent = (state.currentChallengeIndex + 1) + completedMark;
     elements.totalChallenges.textContent = levelChallenges.length;
 
-    if (challenge.expected === null) {
-        elements.expectedOutput.textContent = '(Sandbox mode - no expected output)';
-    } else {
-        elements.expectedOutput.textContent = challenge.expected;
-    }
+    elements.expectedOutput.textContent = challenge.expected === null
+        ? '(Sandbox mode - no expected output)'
+        : challenge.expected;
 
-    elements.outputText.textContent = '';
-    elements.outputStats.textContent = '';
-    elements.errorMessage.style.display = 'none';
+    clearOutput();
     elements.commandInput.value = '';
 
-    // Update difficulty buttons to reflect current progress
     updateDifficultyButtons();
-
-    // Update challenge grid
-    updateChallengeGridBox();
+    updateChallengeGrid();
 }
 
 export function showSuccess(message = 'Correct! Great job!') {
     elements.successMessage.textContent = message;
     elements.successMessage.style.display = 'block';
-    setTimeout(() => {
+    clearTimeout(successTimer);
+    successTimer = setTimeout(() => {
         elements.successMessage.style.display = 'none';
-        if (state.currentMode === 'challenges') {
-            // Find next uncompleted challenge or just go to next
-            const levelChallenges = state.challenges[state.currentLevel];
-            let nextIndex = state.currentChallengeIndex + 1;
-
-            // Try to find next uncompleted challenge
-            while (nextIndex < levelChallenges.length && isChallengeCompleted(state.currentLevel, nextIndex)) {
-                nextIndex++;
-            }
-
-            // If all remaining are completed, just go to next if available
-            if (nextIndex >= levelChallenges.length) {
-                nextIndex = state.currentChallengeIndex + 1;
-            }
-
-            if (nextIndex < levelChallenges.length) {
-                state.currentChallengeIndex = nextIndex;
-                loadChallenge();
-            } else {
-                // Level complete! Try to advance to next difficulty
-                const levels = LEVELS;
-                const currentLevelIndex = levels.indexOf(state.currentLevel);
-
-                if (currentLevelIndex >= 0 && currentLevelIndex < levels.length - 1) {
-                    // Move to next difficulty level
-                    const nextLevel = levels[currentLevelIndex + 1];
-                    state.currentLevel = nextLevel;
-                    state.currentChallengeIndex = 0;
-                    saveProgress();
-
-                    // Update UI
-                    document.querySelectorAll('.difficulty-btn').forEach(btn => {
-                        btn.classList.toggle('active', btn.dataset.level === nextLevel);
-                    });
-                    updateDifficultyButtons();
-                    renderChallengeGrid();
-                    loadChallenge();
-                } else {
-                    // All levels complete!
-                    updateDifficultyButtons();
-                }
-            }
-        }
     }, 1500);
+}
+
+// After a solved challenge: next uncompleted challenge of this level (wrapping
+// around to ones skipped earlier), then the next level with open challenges.
+function advanceChallenge() {
+    const next = findUncompletedIndex(state.currentLevel, state.currentChallengeIndex + 1);
+    if (next !== -1) {
+        goToChallenge(next);
+        return;
+    }
+    const start = LEVELS.indexOf(state.currentLevel);
+    for (let k = 1; k < LEVELS.length; k++) {
+        const level = LEVELS[(start + k) % LEVELS.length];
+        if (findUncompletedIndex(level) !== -1) {
+            selectLevel(level);
+            return;
+        }
+    }
+    showSuccess('All challenges completed!');
 }
 
 export function showError(msg) {
@@ -325,48 +311,73 @@ export function runCommand() {
     if (!cmdLine) return;
 
     elements.errorMessage.style.display = 'none';
+    state.task.tried = true;
 
+    let result;
     try {
-        const result = executePipeline(state.currentText, cmdLine);
-
-        elements.outputText.textContent = result;
-
-        const lines = result.split('\n').filter(l => l !== '');
-        elements.outputStats.textContent = `${lines.length} line(s)`;
-
-        if (state.currentMode === 'challenges') {
-            const challenge = state.challenges[state.currentLevel][state.currentChallengeIndex];
-            if (challenge.expected !== null) {
-                const normalizedResult = result.trim();
-                const normalizedExpected = challenge.expected.trim();
-
-                if (normalizedResult === normalizedExpected) {
-                    // Mark challenge as completed and save
-                    markChallengeCompleted(state.currentLevel, state.currentChallengeIndex);
-                    showSuccess();
-                }
-            }
-        } else if (state.currentMode === 'practice' && state.currentPracticeChallenge) {
-            const expectedResult = state.currentPracticeChallenge.expected;
-            if (result.trim() === expectedResult.trim()) {
-                state.practiceStats.solved++;
-                state.practiceStats.streak++;
-                if (state.practiceStats.streak > state.practiceStats.bestStreak) {
-                    state.practiceStats.bestStreak = state.practiceStats.streak;
-                }
-                saveProgress();
-                updatePracticeStats();
-                showSuccess(`Correct! Streak: ${state.practiceStats.streak}`);
-                setTimeout(() => generatePracticeProblem(), 2000);
-            }
-        }
+        result = executePipeline(state.currentText, cmdLine);
     } catch (e) {
         showError(e.message);
-        if (state.currentMode === 'practice') {
-            state.practiceStats.streak = 0;
+        return;
+    }
+
+    elements.outputText.textContent = result;
+    const lines = result === '' ? 0 : result.split('\n').length;
+    elements.outputStats.textContent = `${lines} line(s)`;
+
+    // Once solved, running again just shows output: no double counting
+    if (state.task.resolved) return;
+
+    if (state.currentMode === 'challenges') {
+        const challenge = currentChallenge();
+        if (challenge.expected !== null && result.trim() === challenge.expected.trim()) {
+            state.task.resolved = true;
+            markChallengeCompleted(challenge, state.task.revealed);
+            updateDifficultyButtons();
+            updateChallengeGrid();
+            showSuccess(state.task.revealed ? 'Correct! (solved with the solution shown)' : 'Correct! Great job!');
+            scheduleAdvance(advanceChallenge, 1500);
+        }
+    } else if (state.currentMode === 'practice' && state.currentPracticeChallenge) {
+        if (result.trim() === state.currentPracticeChallenge.expected.trim()) {
+            state.task.resolved = true;
+            const counted = !state.task.revealed;
+            recordPracticeResult(counted);
             updatePracticeStats();
+            showSuccess(counted
+                ? `Correct! Streak: ${state.practiceStats.streak}`
+                : 'Correct — but the answer was shown, so it does not count');
+            scheduleAdvance(generatePracticeProblem, 2000);
         }
     }
+}
+
+// Reveal the solution of the current task. Solving afterwards is "assisted".
+export function revealSolution() {
+    state.task.revealed = true;
+    if (state.currentMode === 'challenges') {
+        const challenge = currentChallenge();
+        return challenge.solution || challenge.hint;
+    }
+    return state.currentPracticeChallenge?.solution ?? '';
+}
+
+// Skip counts as a finished, unsolved problem (streak resets)
+export function skipPracticeProblem() {
+    if (state.currentPracticeChallenge && !state.task.resolved) {
+        recordPracticeResult(false);
+        updatePracticeStats();
+    }
+    generatePracticeProblem();
+}
+
+// New problem because settings changed: only counts if the user tried it
+export function newPracticeProblem() {
+    if (state.currentPracticeChallenge && !state.task.resolved && state.task.tried) {
+        recordPracticeResult(false);
+        updatePracticeStats();
+    }
+    generatePracticeProblem();
 }
 
 export function initCommandCheckboxes() {
@@ -410,9 +421,8 @@ export function generatePracticeProblem() {
         return;
     }
 
-    state.practiceStats.attempted++;
-    saveProgress();
-    updatePracticeStats();
+    cancelAdvance();
+    resetTask();
 
     const problem = generateProblem(state.selectedCommands, state.practiceDifficulty);
 
@@ -429,9 +439,7 @@ export function generatePracticeProblem() {
         ? problem.cmds.join(' | ')
         : problem.cmds[0];
 
-    elements.outputText.textContent = '';
-    elements.outputStats.textContent = '';
-    elements.errorMessage.style.display = 'none';
+    clearOutput();
     elements.commandInput.value = '';
     elements.commandInput.focus();
 }

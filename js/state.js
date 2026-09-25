@@ -1,6 +1,16 @@
 // Application state management
 
 const STORAGE_KEY = 'linuxCommandPractice';
+const STORAGE_VERSION = 2;
+
+// Challenge levels in the order they are played (sandbox has no goals)
+export const LEVELS = ['beginner', 'intermediate', 'advanced', 'expert', 'master', 'realworld'];
+export const ALL_LEVELS = [...LEVELS, 'sandbox'];
+
+function freshTask() {
+    // State of the challenge / practice problem currently on screen
+    return { resolved: false, revealed: false, tried: false };
+}
 
 export const state = {
     currentMode: null, // 'challenges' or 'practice'
@@ -9,67 +19,81 @@ export const state = {
     currentText: '',
     selectedCommands: new Set(['grep', 'head', 'tail', 'sort', 'wc']),
     practiceDifficulty: 'mixed', // 'single' | 'short' | 'long' | 'mixed'
+    // attempted = problems finished (solved, skipped or answer shown)
     practiceStats: { solved: 0, attempted: 0, streak: 0, bestStreak: 0 },
     currentPracticeChallenge: null,
     challenges: {},
-    // Track completed challenges: { beginner: [0, 2, 5], intermediate: [1, 3], ... }
-    completedChallenges: {
-        beginner: [],
-        intermediate: [],
-        advanced: [],
-        expert: [],
-        master: [],
-        realworld: [],
-        sandbox: []
-    }
+    // Completed challenges by stable id: { 'beginner-03': 'solved' | 'assisted' }
+    // ('assisted' = solved after the solution was revealed)
+    progress: {},
+    task: freshTask()
 };
 
-export const LEVELS = ['beginner', 'intermediate', 'advanced', 'expert', 'master', 'realworld'];
-
-export function setState(key, value) {
-    state[key] = value;
+export function resetTask() {
+    state.task = freshTask();
 }
 
-export function getState(key) {
-    return state[key];
+export function currentChallenge() {
+    return state.challenges[state.currentLevel]?.[state.currentChallengeIndex] ?? null;
 }
 
-// Mark a challenge as completed
-export function markChallengeCompleted(level, index) {
-    if (!state.completedChallenges[level].includes(index)) {
-        state.completedChallenges[level].push(index);
-        saveProgress();
-    }
+// Mark a challenge as completed. A clean solve upgrades an earlier assisted one.
+export function markChallengeCompleted(challenge, assisted) {
+    const previous = state.progress[challenge.id];
+    if (previous === 'solved') return;
+    state.progress[challenge.id] = assisted ? 'assisted' : 'solved';
+    saveProgress();
 }
 
-// Check if a challenge is completed
+// 'solved' | 'assisted' | null
+export function challengeStatus(level, index) {
+    const ch = state.challenges[level]?.[index];
+    return ch ? state.progress[ch.id] ?? null : null;
+}
+
 export function isChallengeCompleted(level, index) {
-    return state.completedChallenges[level].includes(index);
+    return challengeStatus(level, index) !== null;
 }
 
-// Find the first uncompleted challenge index for a level.
-// Falls back to 0 if all are completed (or none exist).
-export function getFirstUncompletedIndex(level) {
+// First uncompleted challenge at or after `from`, wrapping around the level.
+// Returns -1 when every challenge of the level is completed.
+export function findUncompletedIndex(level, from = 0) {
     const total = state.challenges[level]?.length || 0;
-    for (let i = 0; i < total; i++) {
-        if (!isChallengeCompleted(level, i)) {
-            return i;
-        }
+    for (let k = 0; k < total; k++) {
+        const i = (from + k) % total;
+        if (!isChallengeCompleted(level, i)) return i;
     }
-    return 0;
+    return -1;
 }
 
-// Get completion stats for a level
+// Where to resume a level: first uncompleted challenge, or 0 if all are done
+export function getFirstUncompletedIndex(level) {
+    return Math.max(0, findUncompletedIndex(level, 0));
+}
+
 export function getLevelProgress(level) {
-    const completed = state.completedChallenges[level].length;
-    const total = state.challenges[level]?.length || 0;
-    return { completed, total };
+    const list = state.challenges[level] || [];
+    const completed = list.filter(ch => state.progress[ch.id]).length;
+    return { completed, total: list.length };
 }
 
-// Save progress to localStorage
+export function recordPracticeResult(solved) {
+    const s = state.practiceStats;
+    s.attempted++;
+    if (solved) {
+        s.solved++;
+        s.streak++;
+        s.bestStreak = Math.max(s.bestStreak, s.streak);
+    } else {
+        s.streak = 0;
+    }
+    saveProgress();
+}
+
 export function saveProgress() {
     const data = {
-        completedChallenges: state.completedChallenges,
+        version: STORAGE_VERSION,
+        progress: state.progress,
         practiceStats: {
             solved: state.practiceStats.solved,
             attempted: state.practiceStats.attempted,
@@ -86,62 +110,50 @@ export function saveProgress() {
     }
 }
 
-// Load progress from localStorage
+// Must run after the challenge data is loaded: version 1 stored completed
+// challenges by their position, which is mapped to stable ids here.
 export function loadProgress() {
+    let data;
     try {
         const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            const data = JSON.parse(saved);
-
-            if (data.completedChallenges) {
-                state.completedChallenges = {
-                    beginner: data.completedChallenges.beginner || [],
-                    intermediate: data.completedChallenges.intermediate || [],
-                    advanced: data.completedChallenges.advanced || [],
-                    expert: data.completedChallenges.expert || [],
-                    master: data.completedChallenges.master || [],
-                    realworld: data.completedChallenges.realworld || [],
-                    sandbox: data.completedChallenges.sandbox || []
-                };
-            }
-
-            if (data.practiceStats) {
-                state.practiceStats.solved = data.practiceStats.solved || 0;
-                state.practiceStats.attempted = data.practiceStats.attempted || 0;
-                state.practiceStats.bestStreak = data.practiceStats.bestStreak || 0;
-            }
-
-            if (data.selectedCommands) {
-                state.selectedCommands = new Set(data.selectedCommands);
-            }
-
-            if (data.practiceDifficulty) {
-                state.practiceDifficulty = data.practiceDifficulty;
-            }
-
-            if (data.currentLevel && (LEVELS.includes(data.currentLevel) || data.currentLevel === 'sandbox')) {
-                state.currentLevel = data.currentLevel;
-            }
-
-            return true;
-        }
+        if (!saved) return false;
+        data = JSON.parse(saved);
     } catch (e) {
         console.warn('Could not load progress:', e);
+        return false;
     }
-    return false;
+
+    if (data.progress && typeof data.progress === 'object') {
+        state.progress = data.progress;
+    } else if (data.completedChallenges) {
+        for (const [level, indices] of Object.entries(data.completedChallenges)) {
+            for (const i of indices || []) {
+                const ch = state.challenges[level]?.[i];
+                if (ch) state.progress[ch.id] = 'solved';
+            }
+        }
+    }
+
+    if (data.practiceStats) {
+        state.practiceStats.solved = data.practiceStats.solved || 0;
+        state.practiceStats.attempted = data.practiceStats.attempted || 0;
+        state.practiceStats.bestStreak = data.practiceStats.bestStreak || 0;
+    }
+    if (Array.isArray(data.selectedCommands)) {
+        state.selectedCommands = new Set(data.selectedCommands);
+    }
+    if (data.practiceDifficulty) {
+        state.practiceDifficulty = data.practiceDifficulty;
+    }
+    if (ALL_LEVELS.includes(data.currentLevel)) {
+        state.currentLevel = data.currentLevel;
+    }
+    if (data.version !== STORAGE_VERSION) saveProgress();
+    return true;
 }
 
-// Reset all progress
 export function resetProgress() {
-    state.completedChallenges = {
-        beginner: [],
-        intermediate: [],
-        advanced: [],
-        expert: [],
-        master: [],
-        realworld: [],
-        sandbox: []
-    };
+    state.progress = {};
     state.practiceStats = { solved: 0, attempted: 0, streak: 0, bestStreak: 0 };
     saveProgress();
 }

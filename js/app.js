@@ -1,25 +1,25 @@
 // Main application initialization
 
-import { state, loadProgress, saveProgress, resetProgress } from './state.js';
+import { state, ALL_LEVELS, loadProgress, resetProgress } from './state.js';
 import {
     initElements,
     getElements,
     showLandingPage,
     showAppPage,
-    loadChallenge,
+    selectLevel,
+    goToChallenge,
     runCommand,
-    generatePracticeProblem,
+    revealSolution,
+    skipPracticeProblem,
+    newPracticeProblem,
     selectAllCommands,
     deselectAllCommands,
-    updatePracticeStats,
-    renderChallengeGrid
+    updatePracticeStats
 } from './ui.js';
 
 // Load challenge data from JSON files
 async function loadChallengeData() {
-    const levels = ['beginner', 'intermediate', 'advanced', 'expert', 'master', 'realworld', 'sandbox'];
-
-    for (const level of levels) {
+    await Promise.all(ALL_LEVELS.map(async (level) => {
         try {
             const response = await fetch(`data/${level}.json`);
             state.challenges[level] = await response.json();
@@ -27,7 +27,7 @@ async function loadChallengeData() {
             console.error(`Failed to load ${level} challenges:`, error);
             state.challenges[level] = [];
         }
-    }
+    }));
 }
 
 // Initialize event listeners
@@ -47,61 +47,33 @@ function initEventListeners() {
 
     // Difficulty buttons
     document.querySelectorAll('.difficulty-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            state.currentLevel = btn.dataset.level;
-            state.currentChallengeIndex = 0;
-            saveProgress();
-            renderChallengeGrid();
-            loadChallenge();
-        });
+        btn.addEventListener('click', () => selectLevel(btn.dataset.level));
     });
 
     // Navigation buttons
-    el.prevBtn.addEventListener('click', () => {
-        if (state.currentChallengeIndex > 0) {
-            state.currentChallengeIndex--;
-            loadChallenge();
-        }
-    });
-
-    el.nextBtn.addEventListener('click', () => {
-        if (state.currentChallengeIndex < state.challenges[state.currentLevel].length - 1) {
-            state.currentChallengeIndex++;
-            loadChallenge();
-        }
-    });
+    el.prevBtn.addEventListener('click', () => goToChallenge(state.currentChallengeIndex - 1));
+    el.nextBtn.addEventListener('click', () => goToChallenge(state.currentChallengeIndex + 1));
 
     el.hintBtn.addEventListener('click', () => {
-        if (state.currentMode === 'challenges') {
-            const challenge = state.challenges[state.currentLevel][state.currentChallengeIndex];
-            alert('Hint: ' + challenge.hint);
-        } else if (state.currentPracticeChallenge) {
-            alert('Hint: ' + state.currentPracticeChallenge.hint);
-        }
+        const solution = revealSolution();
+        if (solution) alert('Solution: ' + solution);
     });
 
     // Practice mode buttons
-    el.skipBtn.addEventListener('click', () => {
-        state.practiceStats.streak = 0;
-        updatePracticeStats();
-        generatePracticeProblem();
-    });
+    el.skipBtn.addEventListener('click', skipPracticeProblem);
 
     el.showAnswerBtn.addEventListener('click', () => {
         if (state.currentPracticeChallenge) {
-            el.commandInput.value = state.currentPracticeChallenge.solution;
+            el.commandInput.value = revealSolution();
             state.practiceStats.streak = 0;
             updatePracticeStats();
         }
     });
 
-    el.generateBtn.addEventListener('click', generatePracticeProblem);
+    el.generateBtn.addEventListener('click', newPracticeProblem);
     el.selectAllBtn.addEventListener('click', selectAllCommands);
     el.deselectAllBtn.addEventListener('click', deselectAllCommands);
 
-    // Reset progress button (if exists)
     const resetBtn = document.getElementById('reset-progress-btn');
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
@@ -117,10 +89,10 @@ function initEventListeners() {
 async function init() {
     initElements();
 
-    // Load saved progress from localStorage
+    // Progress is keyed by challenge id, so the data must be loaded first
+    await loadChallengeData();
     loadProgress();
 
-    await loadChallengeData();
     initEventListeners();
     showLandingPage();
 }
