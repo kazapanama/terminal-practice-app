@@ -9,12 +9,11 @@ import {
     selectLevel,
     goToChallenge,
     runCommand,
-    revealSolution,
+    showNextHint,
     skipPracticeProblem,
     newPracticeProblem,
     selectAllCommands,
-    deselectAllCommands,
-    updatePracticeStats
+    deselectAllCommands
 } from './ui.js';
 
 // Load challenge data from JSON files
@@ -54,21 +53,10 @@ function initEventListeners() {
     el.prevBtn.addEventListener('click', () => goToChallenge(state.currentChallengeIndex - 1));
     el.nextBtn.addEventListener('click', () => goToChallenge(state.currentChallengeIndex + 1));
 
-    el.hintBtn.addEventListener('click', () => {
-        const solution = revealSolution();
-        if (solution) alert('Solution: ' + solution);
-    });
+    el.hintBtn.addEventListener('click', showNextHint);
 
     // Practice mode buttons
     el.skipBtn.addEventListener('click', skipPracticeProblem);
-
-    el.showAnswerBtn.addEventListener('click', () => {
-        if (state.currentPracticeChallenge) {
-            el.commandInput.value = revealSolution();
-            state.practiceStats.streak = 0;
-            updatePracticeStats();
-        }
-    });
 
     el.generateBtn.addEventListener('click', newPracticeProblem);
     el.selectAllBtn.addEventListener('click', selectAllCommands);

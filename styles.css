@@ -728,3 +728,202 @@ body {
     background: #ffc107;
     color: #1a1a2e;
 }
+
+.nav-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+    border-color: #0f3460;
+    color: #888;
+}
+
+/* Progressive hints */
+.hint-panel {
+    background: #0d1b2a;
+    padding: 12px 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border-left: 3px solid #6c9eff;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.hint-step strong {
+    color: #6c9eff;
+}
+
+.hint-step code {
+    background: #16213e;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #ffc107;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.hint-paste {
+    margin-left: 8px;
+    padding: 2px 10px;
+    background: transparent;
+    border: 1px solid #6c9eff;
+    color: #6c9eff;
+    border-radius: 3px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.hint-paste:hover {
+    background: #6c9eff;
+    color: #1a1a2e;
+}
+
+/* Pipeline inspector */
+.output-stats {
+    color: #888;
+    font-size: 0.85rem;
+}
+
+.pipeline-steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 15px;
+    border-bottom: 1px solid #0f3460;
+    background: rgba(15, 52, 96, 0.35);
+}
+
+.step-chip {
+    padding: 3px 10px;
+    background: #0d1b2a;
+    border: 1px solid #0f3460;
+    border-radius: 12px;
+    color: #ccc;
+    font-family: inherit;
+    font-size: 0.78rem;
+    cursor: pointer;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.step-chip:hover {
+    border-color: #ffc107;
+}
+
+.step-chip.active {
+    border-color: #ffc107;
+    color: #ffc107;
+}
+
+.step-chip.failed {
+    border-color: #ff6b6b;
+    color: #ff6b6b;
+    cursor: default;
+}
+
+/* Shell / command warnings */
+.warning-message {
+    color: #ffc107;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+}
+
+.warning-message:not(:empty) {
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: rgba(255, 193, 7, 0.08);
+    border-radius: 5px;
+}
+
+/* Mismatch feedback */
+.feedback {
+    margin-top: 12px;
+    padding: 12px;
+    background: #0d1b2a;
+    border-radius: 5px;
+    border-left: 3px solid #ff6b6b;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.feedback-title {
+    color: #ff6b6b;
+    font-weight: bold;
+}
+
+.feedback-tip {
+    color: #ddd;
+}
+
+.feedback-tip::before {
+    content: '\2192  ';
+    color: #ffc107;
+}
+
+.diff {
+    margin-top: 4px;
+    padding: 8px 0;
+    background: #16213e;
+    border-radius: 4px;
+    max-height: 260px;
+    overflow: auto;
+    font-size: 0.85rem;
+}
+
+.diff-line {
+    padding: 0 10px;
+    white-space: pre;
+}
+
+.diff-same {
+    color: #888;
+}
+
+.diff-extra {
+    color: #ff8a8a;
+    background: rgba(255, 107, 107, 0.12);
+}
+
+.diff-missing {
+    color: #6cf0a8;
+    background: rgba(0, 255, 136, 0.1);
+}
+
+.diff-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 0.75rem;
+}
+
+.diff-legend span {
+    padding: 1px 6px;
+    border-radius: 3px;
+}
+
+/* Practice: per-command score */
+.practice-note {
+    color: #888;
+    font-size: 0.8rem;
+    margin: -8px 0 12px;
+}
+
+.cmd-score {
+    font-size: 0.7rem;
+    color: #00ff88;
+}
+
+.cmd-score.weak {
+    color: #ff6b6b;
+}
+
+.output-display.empty-result::before {
+    content: "(no output)";
+    color: #666;
+    font-style: italic;
+}

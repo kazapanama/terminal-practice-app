@@ -12,6 +12,10 @@ An interactive web app to learn and practice Linux text processing commands like
 - **Visual Progress Tracking** - Grid showing completed/remaining challenges
 - **Pipe Support** - Chain commands together like `sort | uniq -c | sort -rn` (quotes-aware: `grep -E 'a|b'` works)
 - **Progress Saved** - All progress stored in localStorage
+- **Mismatch Feedback** - A wrong answer shows a line diff against the expected output plus a tip ("right lines, wrong order", "too strict"...)
+- **Pipeline Inspector** - Click any stage of a pipeline to see its intermediate output
+- **Progressive Hints** - Which commands → the command shape with values hidden → the full solution. Solving after seeing the solution is marked as assisted
+- **Weak-spot Practice** - Per-command success is tracked; commands you often miss come up more often
 
 ## How to Run
 
@@ -92,10 +96,13 @@ term-app/
 │   ├── sed.js          # sed subset (addresses, s/d/p/q/=)
 │   ├── regex.js        # POSIX BRE/ERE -> JavaScript RegExp
 │   ├── utils.js        # Shell parsing, getopt, streams, helpers
+│   ├── hints.js        # Progressive hints derived from solutions
+│   ├── feedback.js     # Output vs expected: line diff + tips
 │   ├── dataGenerators.js    # Randomized practice datasets
 │   └── problemGenerators.js # Templates + pipeline recipe composer
 ├── scripts/
 │   ├── testCommands.mjs     # Unit tests for command implementations
+│   ├── testLearning.mjs     # Hints and mismatch feedback
 │   ├── testGenerators.mjs   # Stress tests for problem generators
 │   ├── generateLevels.mjs   # Builds master/realworld levels (expected outputs computed by the engine)
 │   ├── verifyLevels.mjs     # Every challenge: unique id + solution reproduces expected

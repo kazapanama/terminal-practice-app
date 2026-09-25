@@ -5,7 +5,7 @@
 //   2. Pipeline recipes - parameterized multi-command tasks assembled from
 //      random datasets, giving a practically endless task pool.
 
-import { randInt, pick, shuffle } from './utils.js';
+import { randInt, pick, shuffle, weightedPick } from './utils.js';
 import { dataGenerators, datasetInfo } from './dataGenerators.js';
 import { executePipeline } from './commands.js';
 
@@ -1068,49 +1068,46 @@ function recipesFor(selected, lenFilter) {
     );
 }
 
-function buildSingle(selected) {
+// weight(cmd) > 1 makes a command come up more often (used to repeat weak spots)
+function buildSingle(selected, weight) {
     const withTemplates = selected.filter(c => problemGenerators[c]);
     if (withTemplates.length === 0) return null;
-    const cmd = pick(withTemplates);
+    const cmd = weightedPick(withTemplates, weight);
     const problem = problemGenerators[cmd]();
     problem.cmds = [cmd];
     problem.isPipe = false;
     return problem;
 }
 
-function buildRecipe(recipes) {
+function buildRecipe(recipes, weight) {
     if (recipes.length === 0) return null;
-    const recipe = pick(recipes);
+    const recipe = weightedPick(recipes, r => r.cmds.reduce((sum, c) => sum + weight(c), 0) / r.cmds.length);
     const problem = recipe.build();
     problem.cmds = recipe.cmds;
     problem.isPipe = true;
     return problem;
 }
 
-function tryGenerate(selected, difficulty) {
-    if (difficulty === 'single') return buildSingle(selected);
-    if (difficulty === 'short') {
-        return buildRecipe(recipesFor(selected, l => l === 2)) || buildSingle(selected);
-    }
-    if (difficulty === 'long') {
-        return buildRecipe(recipesFor(selected, l => l >= 3))
-            || buildRecipe(recipesFor(selected, l => l === 2))
-            || buildSingle(selected);
-    }
+function tryGenerate(selected, difficulty, weight) {
+    const single = () => buildSingle(selected, weight);
+    const pipes = (lenFilter) => buildRecipe(recipesFor(selected, lenFilter), weight);
+    if (difficulty === 'single') return single();
+    if (difficulty === 'short') return pipes(l => l === 2) || single();
+    if (difficulty === 'long') return pipes(l => l >= 3) || pipes(l => l === 2) || single();
     // mixed
     const roll = Math.random();
-    if (roll < 0.45) return buildSingle(selected);
-    if (roll < 0.75) return buildRecipe(recipesFor(selected, l => l === 2)) || buildSingle(selected);
-    return buildRecipe(recipesFor(selected, l => l >= 3)) || buildSingle(selected);
+    if (roll < 0.45) return single();
+    if (roll < 0.75) return pipes(l => l === 2) || single();
+    return pipes(l => l >= 3) || single();
 }
 
 // Generates a validated practice problem: the solution must run, produce
 // non-empty output and actually transform the input.
-export function generateProblem(selectedCommands, difficulty = 'mixed') {
+export function generateProblem(selectedCommands, difficulty = 'mixed', weight = () => 1) {
     const selected = Array.from(selectedCommands);
 
     for (let attempt = 0; attempt < 25; attempt++) {
-        const problem = tryGenerate(selected, difficulty);
+        const problem = tryGenerate(selected, difficulty, weight);
         if (!problem) break;
         try {
             const expected = executePipeline(problem.text, problem.solution);

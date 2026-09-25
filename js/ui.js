@@ -2,10 +2,14 @@
 
 import {
     state, LEVELS, resetTask, currentChallenge, markChallengeCompleted, challengeStatus,
-    getLevelProgress, getFirstUncompletedIndex, findUncompletedIndex, recordPracticeResult, saveProgress
+    getLevelProgress, getFirstUncompletedIndex, findUncompletedIndex, recordPracticeResult,
+    commandWeight, saveProgress
 } from './state.js';
-import { executePipeline } from './commands.js';
+import { runPipeline } from './commands.js';
+import { splitPipeline } from './utils.js';
 import { commandDefs, generateProblem } from './problemGenerators.js';
+import { analyzeMismatch, diffLines } from './feedback.js';
+import { hintSteps } from './hints.js';
 
 // DOM Elements
 let elements = {};
@@ -44,7 +48,10 @@ export function initElements() {
         nextBtn: document.getElementById('next-btn'),
         hintBtn: document.getElementById('hint-btn'),
         skipBtn: document.getElementById('skip-btn'),
-        showAnswerBtn: document.getElementById('show-answer-btn'),
+        hintPanel: document.getElementById('hint-panel'),
+        pipelineSteps: document.getElementById('pipeline-steps'),
+        warningMessage: document.getElementById('warning-message'),
+        feedback: document.getElementById('feedback'),
         challengeModeTitle: document.getElementById('challenge-mode-title'),
         commandCheckboxes: document.getElementById('command-checkboxes'),
         generateBtn: document.getElementById('generate-btn'),
@@ -107,7 +114,6 @@ function setupChallengesMode() {
     elements.prevBtn.classList.remove('hidden');
     elements.nextBtn.classList.remove('hidden');
     elements.skipBtn.classList.add('hidden');
-    elements.showAnswerBtn.classList.add('hidden');
     elements.challengeModeTitle.textContent = 'Challenge';
     selectLevel(state.currentLevel);
 }
@@ -120,7 +126,6 @@ function setupPracticeMode() {
     elements.prevBtn.classList.add('hidden');
     elements.nextBtn.classList.add('hidden');
     elements.skipBtn.classList.remove('hidden');
-    elements.showAnswerBtn.classList.remove('hidden');
     elements.challengeModeTitle.textContent = 'Practice';
     initCommandCheckboxes();
     initPracticeDifficulty();
@@ -240,8 +245,182 @@ export function updateStats(text) {
 
 function clearOutput() {
     elements.outputText.textContent = '';
+    elements.outputText.classList.remove('empty-result');
     elements.outputStats.textContent = '';
     elements.errorMessage.style.display = 'none';
+    elements.warningMessage.textContent = '';
+    elements.feedback.classList.add('hidden');
+    renderSteps([]);
+}
+
+// Shows a command's output; an empty result is labelled so it is not
+// mistaken for 'nothing happened'
+function showOutput(text) {
+    elements.outputText.textContent = text;
+    elements.outputText.classList.toggle('empty-result', text === '');
+}
+
+function lineCount(text) {
+    return text === '' ? 0 : text.split('\n').length;
+}
+
+// ---------------------------------------------------------------------------
+// Pipeline inspector: one chip per stage; clicking shows that stage's output
+// ---------------------------------------------------------------------------
+
+let currentSteps = [];
+
+function renderSteps(steps, failedCommand = null) {
+    const bar = elements.pipelineSteps;
+    currentSteps = steps;
+    bar.innerHTML = '';
+    if (steps.length + (failedCommand ? 1 : 0) < 2) {
+        bar.classList.add('hidden');
+        return;
+    }
+    bar.classList.remove('hidden');
+    steps.forEach((step, i) => {
+        const n = lineCount(step.output);
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'step-chip';
+        chip.textContent = `${step.command} → ${n}`;
+        chip.title = `Show the output after stage ${i + 1} (${n} line${n === 1 ? '' : 's'})`;
+        chip.addEventListener('click', () => selectStep(i));
+        bar.appendChild(chip);
+    });
+    if (failedCommand) {
+        const chip = document.createElement('span');
+        chip.className = 'step-chip failed';
+        chip.textContent = `${failedCommand} ✗`;
+        chip.title = 'This stage failed — see the error below';
+        bar.appendChild(chip);
+    }
+    if (steps.length) selectStep(steps.length - 1);
+}
+
+function selectStep(index) {
+    const step = currentSteps[index];
+    if (!step) return;
+    showOutput(step.output);
+    const n = lineCount(step.output);
+    const isLast = index === currentSteps.length - 1;
+    elements.outputStats.textContent = isLast ? `${n} line(s)` : `${n} line(s) after stage ${index + 1}`;
+    elements.pipelineSteps.querySelectorAll('button.step-chip').forEach((chip, i) => {
+        chip.classList.toggle('active', i === index);
+        chip.setAttribute('aria-pressed', String(i === index));
+    });
+}
+
+// ---------------------------------------------------------------------------
+// Mismatch feedback: what differs between the output and the expected one
+// ---------------------------------------------------------------------------
+
+function renderFeedback(actual, expected) {
+    const { summary, tips } = analyzeMismatch(actual, expected, state.currentText);
+    const box = elements.feedback;
+    box.innerHTML = '';
+
+    const title = document.createElement('div');
+    title.className = 'feedback-title';
+    title.textContent = 'Not quite yet. ' + summary;
+    box.appendChild(title);
+
+    for (const tip of tips) {
+        const p = document.createElement('div');
+        p.className = 'feedback-tip';
+        p.textContent = tip;
+        box.appendChild(p);
+    }
+
+    const diff = diffLines(actual.replace(/\n+$/, ''), expected.replace(/\n+$/, ''));
+    if (diff.length && diff.length <= 80) {
+        const pre = document.createElement('div');
+        pre.className = 'diff';
+        for (const d of diff) {
+            const line = document.createElement('div');
+            line.className = `diff-line diff-${d.type}`;
+            line.textContent = (d.type === 'extra' ? '- ' : d.type === 'missing' ? '+ ' : '  ') + d.text;
+            pre.appendChild(line);
+        }
+        box.appendChild(pre);
+        const legend = document.createElement('div');
+        legend.className = 'diff-legend';
+        legend.innerHTML = '<span class="diff-extra">- only in your output</span><span class="diff-missing">+ expected, but missing</span>';
+        box.appendChild(legend);
+    }
+    box.classList.remove('hidden');
+}
+
+// ---------------------------------------------------------------------------
+// Progressive hints
+// ---------------------------------------------------------------------------
+
+function hintTask() {
+    return state.currentMode === 'challenges' ? currentChallenge() : state.currentPracticeChallenge;
+}
+
+function renderHints() {
+    const task = hintTask();
+    const steps = task ? hintSteps(task) : [];
+    const panel = elements.hintPanel;
+    panel.innerHTML = '';
+
+    steps.slice(0, state.hintLevel).forEach(step => {
+        const row = document.createElement('div');
+        row.className = 'hint-step';
+        const title = document.createElement('strong');
+        title.textContent = step.title + ': ';
+        row.appendChild(title);
+        if (step.text) row.appendChild(document.createTextNode(step.text + ' '));
+        if (step.code) {
+            const code = document.createElement('code');
+            code.textContent = step.code;
+            row.appendChild(code);
+        }
+        if (step.code && step.code === task.solution) {
+            const paste = document.createElement('button');
+            paste.type = 'button';
+            paste.className = 'hint-paste';
+            paste.textContent = 'Put in terminal';
+            paste.addEventListener('click', () => {
+                elements.commandInput.value = task.solution;
+                elements.commandInput.focus();
+            });
+            row.appendChild(paste);
+        }
+        panel.appendChild(row);
+    });
+    panel.classList.toggle('hidden', state.hintLevel === 0);
+
+    const btn = elements.hintBtn;
+    if (steps.length === 0 || state.hintLevel >= steps.length) {
+        btn.disabled = true;
+        btn.textContent = steps.length && task.solution ? 'Solution shown' : 'Hint';
+    } else {
+        btn.disabled = false;
+        const next = state.hintLevel + 1;
+        btn.textContent = task.solution && next === steps.length
+            ? `Show solution (${next}/${steps.length})`
+            : `Hint ${next}/${steps.length}`;
+    }
+}
+
+// Reveals the next hint step. The last step is the solution: solving after
+// that counts as assisted (challenges) or not at all (practice).
+export function showNextHint() {
+    const task = hintTask();
+    const steps = task ? hintSteps(task) : [];
+    if (state.hintLevel >= steps.length) return;
+    state.hintLevel++;
+    if (task.solution && state.hintLevel === steps.length) {
+        state.task.revealed = true;
+        if (state.currentMode === 'practice') {
+            state.practiceStats.streak = 0;
+            updatePracticeStats();
+        }
+    }
+    renderHints();
 }
 
 export function loadChallenge() {
@@ -267,6 +446,7 @@ export function loadChallenge() {
         : challenge.expected;
 
     clearOutput();
+    renderHints();
     elements.commandInput.value = '';
 
     updateDifficultyButtons();
@@ -301,6 +481,10 @@ function advanceChallenge() {
     showSuccess('All challenges completed!');
 }
 
+function showWarnings(warnings) {
+    elements.warningMessage.textContent = warnings.join('\n');
+}
+
 export function showError(msg) {
     elements.errorMessage.textContent = msg;
     elements.errorMessage.style.display = 'block';
@@ -310,23 +494,35 @@ export function runCommand() {
     const cmdLine = elements.commandInput.value.trim();
     if (!cmdLine) return;
 
-    elements.errorMessage.style.display = 'none';
+    clearOutput();
     state.task.tried = true;
-
-    let result;
+    let run;
     try {
-        result = executePipeline(state.currentText, cmdLine);
+        run = runPipeline(state.currentText, cmdLine);
     } catch (e) {
         showError(e.message);
+        showWarnings(e.warnings || []);
+        const done = e.steps || [];
+        const stages = splitPipeline(cmdLine);
+        renderSteps(done, done.length < stages.length ? stages[done.length].trim() : null);
         return;
     }
 
-    elements.outputText.textContent = result;
-    const lines = result === '' ? 0 : result.split('\n').length;
-    elements.outputStats.textContent = `${lines} line(s)`;
+    const result = run.output;
+    showWarnings(run.warnings);
+    showOutput(result);
+    elements.outputStats.textContent = `${lineCount(result)} line(s)`;
+    renderSteps(run.steps);
 
     // Once solved, running again just shows output: no double counting
     if (state.task.resolved) return;
+
+    const expected = state.currentMode === 'challenges'
+        ? currentChallenge().expected
+        : state.currentPracticeChallenge?.expected;
+    if (expected !== null && expected !== undefined && result.trim() !== expected.trim()) {
+        renderFeedback(result, expected);
+    }
 
     if (state.currentMode === 'challenges') {
         const challenge = currentChallenge();
@@ -342,7 +538,7 @@ export function runCommand() {
         if (result.trim() === state.currentPracticeChallenge.expected.trim()) {
             state.task.resolved = true;
             const counted = !state.task.revealed;
-            recordPracticeResult(counted);
+            recordPracticeResult(counted, state.currentPracticeChallenge.cmds);
             updatePracticeStats();
             showSuccess(counted
                 ? `Correct! Streak: ${state.practiceStats.streak}`
@@ -352,20 +548,10 @@ export function runCommand() {
     }
 }
 
-// Reveal the solution of the current task. Solving afterwards is "assisted".
-export function revealSolution() {
-    state.task.revealed = true;
-    if (state.currentMode === 'challenges') {
-        const challenge = currentChallenge();
-        return challenge.solution || challenge.hint;
-    }
-    return state.currentPracticeChallenge?.solution ?? '';
-}
-
 // Skip counts as a finished, unsolved problem (streak resets)
 export function skipPracticeProblem() {
     if (state.currentPracticeChallenge && !state.task.resolved) {
-        recordPracticeResult(false);
+        recordPracticeResult(false, state.currentPracticeChallenge.cmds);
         updatePracticeStats();
     }
     generatePracticeProblem();
@@ -374,7 +560,7 @@ export function skipPracticeProblem() {
 // New problem because settings changed: only counts if the user tried it
 export function newPracticeProblem() {
     if (state.currentPracticeChallenge && !state.task.resolved && state.task.tried) {
-        recordPracticeResult(false);
+        recordPracticeResult(false, state.currentPracticeChallenge.cmds);
         updatePracticeStats();
     }
     generatePracticeProblem();
@@ -390,6 +576,7 @@ export function initCommandCheckboxes() {
             <input type="checkbox" id="cmd-${cmd}" ${state.selectedCommands.has(cmd) ? 'checked' : ''}>
             <label for="cmd-${cmd}">${info.name}</label>
             <span class="cmd-desc">${info.desc}</span>
+            <span class="cmd-score" data-cmd="${cmd}"></span>
         `;
 
         const checkbox = div.querySelector('input');
@@ -413,6 +600,23 @@ export function initCommandCheckboxes() {
 
         elements.commandCheckboxes.appendChild(div);
     }
+    updateCommandScores();
+}
+
+// "solved/attempts" badge per command; weak ones are highlighted
+function updateCommandScores() {
+    elements.commandCheckboxes.querySelectorAll('.cmd-score').forEach(badge => {
+        const c = state.commandStats[badge.dataset.cmd];
+        if (!c || !c.attempts) {
+            badge.textContent = '';
+            badge.removeAttribute('title');
+            badge.classList.remove('weak');
+            return;
+        }
+        badge.textContent = `${c.solved}/${c.attempts}`;
+        badge.title = `Solved ${c.solved} of ${c.attempts} practice problems that use ${badge.dataset.cmd}`;
+        badge.classList.toggle('weak', c.attempts >= 2 && c.solved / c.attempts < 0.5);
+    });
 }
 
 export function generatePracticeProblem() {
@@ -424,7 +628,7 @@ export function generatePracticeProblem() {
     cancelAdvance();
     resetTask();
 
-    const problem = generateProblem(state.selectedCommands, state.practiceDifficulty);
+    const problem = generateProblem(state.selectedCommands, state.practiceDifficulty, commandWeight);
 
     state.currentPracticeChallenge = problem;
     state.currentText = problem.text;
@@ -440,6 +644,7 @@ export function generatePracticeProblem() {
         : problem.cmds[0];
 
     clearOutput();
+    renderHints();
     elements.commandInput.value = '';
     elements.commandInput.focus();
 }
@@ -451,6 +656,7 @@ export function updatePracticeStats() {
     if (elements.bestStreakCount) {
         elements.bestStreakCount.textContent = state.practiceStats.bestStreak;
     }
+    updateCommandScores();
 }
 
 export function selectAllCommands() {

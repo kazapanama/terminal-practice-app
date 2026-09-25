@@ -45,6 +45,7 @@
             <div id="practice-mode" class="hidden">
                 <div class="practice-config">
                     <h3>Select Commands to Practice</h3>
+                    <p class="practice-note">The number next to a command is how many of its problems you solved. Commands you often miss come up more often.</p>
                     <div class="command-checkboxes" id="command-checkboxes"></div>
                     <h3>Task Difficulty</h3>
                     <div class="practice-difficulty">
@@ -89,14 +90,14 @@
                     <div class="challenge-nav">
                         <button class="nav-btn" id="prev-btn">Previous</button>
                         <button class="nav-btn" id="next-btn">Next</button>
-                        <button class="nav-btn" id="hint-btn">Solution</button>
+                        <button class="nav-btn" id="hint-btn">Hint</button>
                         <button class="nav-btn hidden" id="skip-btn">Skip</button>
-                        <button class="nav-btn hidden" id="show-answer-btn">Show Answer</button>
                     </div>
                 </div>
                 <div class="challenge-description" id="challenge-desc">
                     Loading challenge...
                 </div>
+                <div class="hint-panel hidden" id="hint-panel" aria-live="polite"></div>
                 <div class="expected-output">
                     <h4>Expected Output:</h4>
                     <pre id="expected-output">...</pre>
@@ -120,8 +121,9 @@
                 <div class="panel">
                     <div class="panel-header">
                         <span class="title">Output</span>
-                        <span id="output-stats" style="color: #888; font-size: 0.85rem;"></span>
+                        <span id="output-stats" class="output-stats"></span>
                     </div>
+                    <div class="pipeline-steps hidden" id="pipeline-steps" aria-label="Output after each pipeline stage"></div>
                     <div class="panel-content">
                         <div class="output-display" id="output-text"></div>
                     </div>
@@ -134,7 +136,9 @@
                     <input type="text" class="command-input" id="command-input" placeholder="Enter your command (e.g., grep 'error' | head -5 | sort)" autocomplete="off">
                     <button class="run-btn" id="run-btn">Run</button>
                 </div>
-                <div class="error-message" id="error-message"></div>
+                <div class="error-message" id="error-message" role="alert"></div>
+                <div class="warning-message" id="warning-message" role="status"></div>
+                <div class="feedback hidden" id="feedback" aria-live="polite"></div>
             </div>
 
             <div class="help-section">

@@ -21,16 +21,21 @@ export const state = {
     practiceDifficulty: 'mixed', // 'single' | 'short' | 'long' | 'mixed'
     // attempted = problems finished (solved, skipped or answer shown)
     practiceStats: { solved: 0, attempted: 0, streak: 0, bestStreak: 0 },
+    // Per-command practice results: { grep: { attempts: 5, solved: 4 } }
+    commandStats: {},
     currentPracticeChallenge: null,
     challenges: {},
     // Completed challenges by stable id: { 'beginner-03': 'solved' | 'assisted' }
     // ('assisted' = solved after the solution was revealed)
     progress: {},
-    task: freshTask()
+    task: freshTask(),
+    // Revealed hint steps for the task on screen
+    hintLevel: 0
 };
 
 export function resetTask() {
     state.task = freshTask();
+    state.hintLevel = 0;
 }
 
 export function currentChallenge() {
@@ -77,7 +82,12 @@ export function getLevelProgress(level) {
     return { completed, total: list.length };
 }
 
-export function recordPracticeResult(solved) {
+export function recordPracticeResult(solved, cmds = []) {
+    for (const cmd of new Set(cmds)) {
+        const c = state.commandStats[cmd] ||= { attempts: 0, solved: 0 };
+        c.attempts++;
+        if (solved) c.solved++;
+    }
     const s = state.practiceStats;
     s.attempted++;
     if (solved) {
@@ -90,6 +100,14 @@ export function recordPracticeResult(solved) {
     saveProgress();
 }
 
+// How often a command should come up in practice: unseen = 1.5, mastered
+// commands drop towards 0.5, ones that are often failed rise towards 2.5.
+export function commandWeight(cmd) {
+    const c = state.commandStats[cmd] || { attempts: 0, solved: 0 };
+    const successRate = (c.solved + 1) / (c.attempts + 2);
+    return 0.5 + 2 * (1 - successRate);
+}
+
 export function saveProgress() {
     const data = {
         version: STORAGE_VERSION,
@@ -99,6 +117,7 @@ export function saveProgress() {
             attempted: state.practiceStats.attempted,
             bestStreak: state.practiceStats.bestStreak
         },
+        commandStats: state.commandStats,
         selectedCommands: Array.from(state.selectedCommands),
         practiceDifficulty: state.practiceDifficulty,
         currentLevel: state.currentLevel
@@ -139,6 +158,9 @@ export function loadProgress() {
         state.practiceStats.attempted = data.practiceStats.attempted || 0;
         state.practiceStats.bestStreak = data.practiceStats.bestStreak || 0;
     }
+    if (data.commandStats && typeof data.commandStats === 'object') {
+        state.commandStats = data.commandStats;
+    }
     if (Array.isArray(data.selectedCommands)) {
         state.selectedCommands = new Set(data.selectedCommands);
     }
@@ -155,5 +177,6 @@ export function loadProgress() {
 export function resetProgress() {
     state.progress = {};
     state.practiceStats = { solved: 0, attempted: 0, streak: 0, bestStreak: 0 };
+    state.commandStats = {};
     saveProgress();
 }
