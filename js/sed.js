@@ -1,11 +1,12 @@
 // sed (subset): addresses (N, $, /re/, ranges, !) with the commands
-// s///, d, p, q and =, several commands separated by ; or given with -e.
+// s///, y///, d, p, q, =, a, i, c and w; several commands separated by ; or
+// given with -e; files, -n, -E/-r, -s and in-place editing with -i[SUFFIX].
 // Regexes are BRE by default and ERE with -E / -r, exactly like GNU sed.
 
 import { posixRegExp } from './regex.js';
 import { getopt, toLines, fromLines } from './utils.js';
 
-const SUPPORTED = 's, d, p, q, =';
+const SUPPORTED = 's, y, d, p, q, =, a, i, c, w';
 
 // Characters that change meaning when escaped (BRE) / are special (ERE);
 // an escaped delimiter must stay escaped for these to remain literal.
@@ -33,7 +34,7 @@ class SedParser {
         while (this.i < this.s.length && /[ \t]/.test(this.s[this.i])) this.i++;
     }
 
-    // Reads up to an unescaped delimiter (a [...] bracket may contain it).
+    // Reads up to an unescaped delimiter
     readDelimited(delim) {
         let out = '';
         while (this.i < this.s.length) {
@@ -54,9 +55,38 @@ class SedParser {
         return null;
     }
 
+    // Text argument of a/i/c: "a text", "a\text" or "a\<newline>text"
+    readText() {
+        this.skipSpaces();
+        if (this.peek() === '\\') {
+            this.i++;
+            if (this.peek() === '\n') this.i++;
+        }
+        let out = '';
+        while (this.i < this.s.length && this.s[this.i] !== '\n') {
+            if (this.s[this.i] === '\\' && this.i + 1 < this.s.length) {
+                const n = this.s[this.i + 1];
+                if (n === '\n') { out += '\n'; this.i += 2; continue; }
+                out += n === 't' ? '\t' : n;
+                this.i += 2;
+                continue;
+            }
+            out += this.s[this.i++];
+        }
+        return out;
+    }
+
+    readFilename() {
+        this.skipSpaces();
+        let name = '';
+        while (this.i < this.s.length && this.s[this.i] !== '\n') name += this.s[this.i++];
+        if (!name) throw this.error('missing filename in r/R/w/W commands');
+        return name;
+    }
+
     parseAddress() {
         const ch = this.peek();
-        if (/[0-9]/.test(ch)) {
+        if (/[0-9]/.test(ch ?? '')) {
             let n = '';
             while (/[0-9]/.test(this.peek() ?? '')) n += this.s[this.i++];
             if (Number(n) === 0) throw this.error('invalid usage of line address 0');
@@ -87,7 +117,7 @@ class SedParser {
         const replacement = this.readDelimited(delim);
         if (replacement === null) throw this.error("unterminated `s' command");
 
-        const cmd = { cmd: 's', src: unescapeDelimiter(pattern, delim, this.ere), replacement, delim, global: false, nth: 1, print: false, icase: false };
+        const cmd = { cmd: 's', src: unescapeDelimiter(pattern, delim, this.ere), replacement, delim, global: false, nth: 1, print: false, icase: false, wfile: null };
         while (this.i < this.s.length && !/[;\n}\s]/.test(this.peek())) {
             const f = this.s[this.i];
             if (f === 'g') { cmd.global = true; this.i++; }
@@ -98,13 +128,27 @@ class SedParser {
                 while (/[0-9]/.test(this.peek() ?? '')) n += this.s[this.i++];
                 if (Number(n) === 0) throw this.error("number option to `s' command may not be zero");
                 cmd.nth = Number(n);
-            } else if (f === 'w' || f === 'e' || f === 'm' || f === 'M') {
+            } else if (f === 'w') {
+                this.i++;
+                cmd.wfile = this.readFilename();
+            } else if (f === 'e' || f === 'm' || f === 'M') {
                 throw new Error(`sed: the s///${f} flag is not supported in this trainer`);
             } else {
                 throw this.error("unknown option to `s'");
             }
         }
         return cmd;
+    }
+
+    parseTransliterate() {
+        const delim = this.s[this.i++];
+        const unescape = (s) => s.replace(/\\(.)/g, (m, c) => (c === 'n' ? '\n' : c === '\\' ? '\\' : c === delim ? delim : m));
+        const a = this.readDelimited(delim);
+        const b = a === null ? null : this.readDelimited(delim);
+        if (a === null || b === null) throw this.error("unterminated `y' command");
+        const from = [...unescape(a)], to = [...unescape(b)];
+        if (from.length !== to.length) throw this.error("strings for `y' command are different lengths");
+        return { cmd: 'y', map: new Map(from.map((c, i) => [c, to[i]])) };
     }
 
     parse() {
@@ -128,13 +172,16 @@ class SedParser {
             let cmd;
             if (c === undefined) throw this.error('missing command');
             if (c === 's') cmd = this.parseSubstitute();
+            else if (c === 'y') cmd = this.parseTransliterate();
             else if (c === 'd' || c === 'p' || c === 'q' || c === '=') cmd = { cmd: c };
+            else if (c === 'a' || c === 'i' || c === 'c') cmd = { cmd: c, text: this.readText() };
+            else if (c === 'w') cmd = { cmd: 'w', file: this.readFilename() };
             else if (c === '{' || c === '}') throw new Error('sed: { } command blocks are not supported in this trainer');
-            else if ('aicyhHgGxnNDPbtTrwlz'.includes(c)) {
+            else if ('hHgGxnNDPbtTrlzeFQRW'.includes(c)) {
                 throw new Error(`sed: the '${c}' command is not supported in this trainer (supported: ${SUPPORTED})`);
             } else throw this.error(`unknown command: \`${c}'`);
 
-            if (cmd.cmd === 'q' && a2) throw this.error('command only uses one address');
+            if ((cmd.cmd === 'q' || cmd.cmd === 'a' || cmd.cmd === 'i') && a2) throw this.error('command only uses one address');
 
             this.skipSpaces();
             const next = this.peek();
@@ -178,19 +225,25 @@ function parseReplacement(src, groupCount) {
     return parts;
 }
 
-export function sed(input, args, io = {}) {
+export function sed(args, io) {
     const warn = io.warn || (() => {});
-    const { opts, operands } = getopt('sed', args, { flags: 'nEr', args: 'e' });
+    // -i takes an optional attached suffix (-i.bak), which getopt can't express
+    let inPlace = null;
+    const argv = [];
+    for (const a of args) {
+        if (/^-i/.test(a)) { inPlace = a.slice(2); continue; }
+        if (a === '--in-place') { inPlace = ''; continue; }
+        argv.push(a);
+    }
+    const { opts, operands } = getopt('sed', argv, { flags: 'nErs', args: 'e' });
     let script;
     if (opts.e) {
         script = opts.e.join('\n');
     } else {
-        if (!operands.length) throw new Error('Usage: sed [OPTION]... {script-only-if-no-other-script}');
+        if (!operands.length) throw new Error('Usage: sed [OPTION]... {script-only-if-no-other-script} [input-file]...');
         script = operands.shift();
     }
-    for (const f of operands) {
-        if (f !== '-') throw new Error(`sed: can't read ${f}: No such file or directory`);
-    }
+    if (inPlace !== null && !operands.length) throw new Error('sed: no input files');
 
     const ere = !!(opts.E || opts.r);
     const mode = ere ? 'extended' : 'basic';
@@ -206,6 +259,7 @@ export function sed(input, args, io = {}) {
         lastRegex = re;
         return re;
     };
+    const wfiles = new Map();
     for (const c of cmds) {
         for (const a of [c.a1, c.a2]) {
             if (a && a.type === 're') a.re = compile(a.src, a.flags);
@@ -214,65 +268,127 @@ export function sed(input, args, io = {}) {
             c.re = compile(c.src, 'g' + (c.icase ? 'i' : ''));
             c.repl = parseReplacement(c.replacement, lastRegex.groupCount ?? 0);
         }
+        const wf = c.cmd === 'w' ? c.file : c.cmd === 's' ? c.wfile : null;
+        if (wf) wfiles.set(wf, []);
     }
-
-    const lines = toLines(input);
-    const lastIdx = lines.length - 1;
-    const out = [];
-
-    const test = (a, idx, ps) => {
-        if (a.type === 'line') return idx + 1 === a.n;
-        if (a.type === 'last') return idx === lastIdx;
-        a.re.lastIndex = 0;
-        return a.re.test(ps);
+    const writeW = (file, line) => {
+        if (file === '/dev/stdout') return 'stdout';
+        wfiles.get(file).push(line);
+        return null;
     };
-    const selected = (c, idx, ps) => {
-        let r;
-        if (!c.a1) r = true;
-        else if (!c.a2) r = test(c.a1, idx, ps);
-        else if (!c.active) {
-            r = test(c.a1, idx, ps);
-            if (r) {
-                if (c.a2.type === 'line') c.active = c.a2.n > idx + 1;
+
+    // Runs the script over one stream of lines, appending output to `out`
+    const run = (lines, out) => {
+        const lastIdx = lines.length - 1;
+        for (const c of cmds) c.active = false;
+        const test = (a, idx, ps) => {
+            if (a.type === 'line') return idx + 1 === a.n;
+            if (a.type === 'last') return idx === lastIdx;
+            a.re.lastIndex = 0;
+            return a.re.test(ps);
+        };
+        const selected = (c, idx, ps) => {
+            let r;
+            if (!c.a1) r = true;
+            else if (!c.a2) r = test(c.a1, idx, ps);
+            else if (!c.active) {
+                r = test(c.a1, idx, ps);
+                if (r) {
+                    if (c.a2.type === 'line') c.active = c.a2.n > idx + 1;
+                    else if (c.a2.type === 'last') c.active = idx !== lastIdx;
+                    else c.active = true;
+                }
+            } else {
+                r = true;
+                if (c.a2.type === 'line') c.active = idx + 1 < c.a2.n;
                 else if (c.a2.type === 'last') c.active = idx !== lastIdx;
-                else c.active = true;
+                else if (test(c.a2, idx, ps)) c.active = false;
             }
-        } else {
-            r = true;
-            if (c.a2.type === 'line') c.active = idx + 1 < c.a2.n;
-            else if (c.a2.type === 'last') c.active = idx !== lastIdx;
-            else if (test(c.a2, idx, ps)) c.active = false;
+            return c.neg ? !r : r;
+        };
+
+        for (let idx = 0; idx < lines.length; idx++) {
+            let ps = lines[idx];
+            let deleted = false;
+            let quit = false;
+            const appended = [];
+            for (const c of cmds) {
+                if (!selected(c, idx, ps)) continue;
+                if (c.cmd === 'd') { deleted = true; break; }
+                if (c.cmd === 'p') { out.push(ps); continue; }
+                if (c.cmd === '=') { out.push(String(idx + 1)); continue; }
+                if (c.cmd === 'q') { quit = true; break; }
+                if (c.cmd === 'i') { out.push(c.text); continue; }
+                if (c.cmd === 'a') { appended.push(c.text); continue; }
+                if (c.cmd === 'c') {
+                    // in a range the text replaces the whole range, printed at its end
+                    if (!c.a2 || c.neg || !c.active) out.push(c.text);
+                    deleted = true;
+                    break;
+                }
+                if (c.cmd === 'w') { if (writeW(c.file, ps)) out.push(ps); continue; }
+                if (c.cmd === 'y') { ps = [...ps].map(ch => c.map.get(ch) ?? ch).join(''); continue; }
+                if (c.cmd === 's') {
+                    let count = 0;
+                    let replaced = false;
+                    c.re.lastIndex = 0;
+                    ps = ps.replace(c.re, (...m) => {
+                        count++;
+                        const hit = c.global ? count >= c.nth : count === c.nth;
+                        if (!hit) return m[0];
+                        replaced = true;
+                        return c.repl.map(p => (p.lit !== undefined ? p.lit : (m[p.group] ?? ''))).join('');
+                    });
+                    if (replaced && c.print) out.push(ps);
+                    if (replaced && c.wfile && writeW(c.wfile, ps)) out.push(ps);
+                }
+            }
+            if (!deleted && !opts.n) out.push(ps);
+            out.push(...appended);
+            if (quit) return true;
         }
-        return c.neg ? !r : r;
+        return false;
     };
 
-    for (let idx = 0; idx < lines.length; idx++) {
-        let ps = lines[idx];
-        let deleted = false;
-        let quit = false;
-        for (const c of cmds) {
-            if (!selected(c, idx, ps)) continue;
-            if (c.cmd === 'd') { deleted = true; break; }
-            if (c.cmd === 'p') { out.push(ps); continue; }
-            if (c.cmd === '=') { out.push(String(idx + 1)); continue; }
-            if (c.cmd === 'q') { quit = true; break; }
-            if (c.cmd === 's') {
-                let count = 0;
-                let replaced = false;
-                c.re.lastIndex = 0;
-                ps = ps.replace(c.re, (...m) => {
-                    count++;
-                    const hit = c.global ? count >= c.nth : count === c.nth;
-                    if (!hit) return m[0];
-                    replaced = true;
-                    return c.repl.map(p => (p.lit !== undefined ? p.lit : (m[p.group] ?? ''))).join('');
-                });
-                if (replaced && c.print) out.push(ps);
-            }
+    const readFileOrReport = (name) => {
+        if (name === '-') return io.stdin();
+        try {
+            return io.readFile(name);
+        } catch (e) {
+            io.error(e.code === 'EISDIR' ? `sed: couldn't edit ${name}: not a regular file` : `sed: can't read ${name}: No such file or directory`);
+            io.setStatus(2);
+            return null;
         }
-        if (!deleted && !opts.n) out.push(ps);
-        if (quit) break;
+    };
+
+    let stdout = '';
+    if (inPlace !== null || opts.s) {
+        for (const name of operands.length ? operands : ['-']) {
+            const text = readFileOrReport(name);
+            if (text === null) continue;
+            const out = [];
+            const quit = run(toLines(text), out);
+            if (inPlace !== null && name !== '-') {
+                if (inPlace) io.writeFile(inPlace.includes('*') ? inPlace.replace(/\*/g, name) : name + inPlace, text);
+                io.writeFile(name, fromLines(out));
+            } else {
+                stdout += fromLines(out);
+            }
+            if (quit) break;
+        }
+    } else {
+        const lines = [];
+        for (const name of operands.length ? operands : ['-']) {
+            const text = readFileOrReport(name);
+            if (text !== null) lines.push(...toLines(text));
+        }
+        const out = [];
+        run(lines, out);
+        stdout = fromLines(out);
     }
 
-    return fromLines(out);
+    for (const [file, lines] of wfiles) {
+        if (file !== '/dev/stdout') io.writeFile(file, fromLines(lines));
+    }
+    return stdout;
 }

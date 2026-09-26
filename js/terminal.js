@@ -6,7 +6,7 @@ import { splitPipeline } from './utils.js';
 
 const HISTORY_KEY = 'linuxCommandPractice.history';
 const HISTORY_MAX = 100;
-const DEFAULT_HELP = '↑/↓ history · Tab completes commands and lists options · Ctrl+L clears the output · Esc clears the line';
+const DEFAULT_HELP = '↑/↓ history · Tab completes commands and file names, and lists options · Ctrl+L clears the output · Esc clears the line';
 
 function loadHistory() {
     try {
@@ -39,13 +39,13 @@ function optionHelp(cmd) {
     if (!opts.length) return `${cmd}: ${spec.summary} (no options)`;
     return `${cmd} — ${spec.summary}: ` + opts
         .map(([k, desc]) => {
-            const m = desc.match(/^([A-Z]+): (.*)$/);
+            const m = desc.match(/^([A-Z][A-Z=]*): (.*)$/);
             return m ? `-${k} ${m[1]} ${m[2]}` : `-${k} ${desc}`;
         })
         .join(' · ');
 }
 
-export function initTerminal({ input, help, onRun, onClear }) {
+export function initTerminal({ input, help, onRun, onClear, fs = () => null }) {
     const history = loadHistory();
     let pos = history.length;
     let draft = '';
@@ -61,7 +61,8 @@ export function initTerminal({ input, help, onRun, onClear }) {
         const cursor = input.selectionStart ?? input.value.length;
         const before = input.value.slice(0, cursor);
         const after = input.value.slice(cursor);
-        const stage = splitPipeline(before).pop();
+        // the command being typed: after the last |, ;, && or ||
+        const stage = splitPipeline(before).pop().split(/;|&&/).pop();
         const words = stage.trimStart().split(/\s+/);
         const current = words[words.length - 1];
 
@@ -81,6 +82,20 @@ export function initTerminal({ input, help, onRun, onClear }) {
         }
 
         const cmd = words[0];
+        const vfs = fs();
+        if (vfs && !current.startsWith('-')) {
+            const matches = vfs.allPaths().filter(p => p.startsWith(current));
+            if (matches.length) {
+                const one = matches.length === 1;
+                const completion = one ? matches[0] + (vfs.isDir(matches[0]) ? '/' : ' ') : commonPrefix(matches);
+                const head = before.slice(0, before.length - current.length);
+                input.value = head + completion + after;
+                const at = head.length + completion.length;
+                input.setSelectionRange(at, at);
+                setHelp(one ? (commandSpecs[cmd] ? optionHelp(cmd) : '') : matches.join('   '));
+                return;
+            }
+        }
         setHelp(commandSpecs[cmd] ? optionHelp(cmd) : `${cmd}: command not found. Available: ${COMMAND_NAMES.join(' ')}`);
     }
 

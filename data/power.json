@@ -1,0 +1,226 @@
+[
+    {
+        "id": "power-01",
+        "text": "GET /index.html 200\nPOST /api/login 401\nGET /api/users 200\nGET /missing 404\nPOST /api/login 200\nDELETE /api/users/7 403\nGET /index.html 200\nPUT /api/users/3 200\nGET /api/orders 500",
+        "description": "Count the requests per HTTP method (1st field) with a single awk and print \"METHOD COUNT\", sorted by method name.",
+        "expected": "DELETE 1\nGET 5\nPOST 2\nPUT 1",
+        "solution": "awk '{count[$1]++} END {for (m in count) print m, count[m]}' | sort",
+        "hint": "Use: awk '{count[$1]++} END {for (m in count) print m, count[m]}' | sort - an array counts per key; \"for (k in arr)\" has no fixed order, so sort afterwards"
+    },
+    {
+        "id": "power-02",
+        "text": "books,12.50\ngames,59.99\nbooks,7.25\nmusic,9.99\ngames,19.99\nbooks,30.00\nmusic,14.50",
+        "description": "Sum the amounts (2nd field) per category (1st field) and print \"category total\", sorted by category.",
+        "expected": "books 49.75\ngames 79.98\nmusic 24.49",
+        "solution": "awk -F',' '{sum[$1] += $2} END {for (c in sum) print c, sum[c]}' | sort",
+        "hint": "Use: awk -F',' '{sum[$1] += $2} END {for (c in sum) print c, sum[c]}' | sort - sum[key] += value accumulates per key"
+    },
+    {
+        "id": "power-03",
+        "text": "books,12.50\ngames,59.99\nbooks,7.25\nmusic,9.99\ngames,19.99\nbooks,30.00\nmusic,14.50",
+        "description": "Print a table: the category left-aligned in 8 characters, then the amount right-aligned in 7 characters with 2 decimals (e.g. \"books      12.50\").",
+        "expected": "books     12.50\ngames     59.99\nbooks      7.25\nmusic      9.99\ngames     19.99\nbooks     30.00\nmusic     14.50",
+        "solution": "awk -F',' '{printf \"%-8s%7.2f\\n\", $1, $2}'",
+        "hint": "Use: awk -F',' '{printf \"%-8s%7.2f\\n\", $1, $2}' - %-8s pads a string on the right, %7.2f is a number 7 wide with 2 decimals; printf adds no newline by itself"
+    },
+    {
+        "id": "power-04",
+        "text": "alice 82\nbob 47\ncarol 95\ndave 59\neve 60\nfrank 71",
+        "description": "Print every student followed by \"pass\" if the score is 60 or more, otherwise \"fail\".",
+        "expected": "alice pass\nbob fail\ncarol pass\ndave fail\neve pass\nfrank pass",
+        "solution": "awk '{if ($2 >= 60) print $1, \"pass\"; else print $1, \"fail\"}'",
+        "hint": "Use: awk '{if ($2 >= 60) print $1, \"pass\"; else print $1, \"fail\"}' - if/else works like in C"
+    },
+    {
+        "id": "power-05",
+        "text": "alice 82\nbob 47\ncarol 95\ndave 59\neve 60\nfrank 71",
+        "description": "Print the student with the highest score as \"name score\" — in one awk, without sort.",
+        "expected": "carol 95",
+        "solution": "awk 'NR == 1 || $2 > max {max = $2; name = $1} END {print name, max}'",
+        "hint": "Use: awk 'NR == 1 || $2 > max {max = $2; name = $1} END {print name, max}' - remember the best value seen so far"
+    },
+    {
+        "id": "power-06",
+        "text": "alice 82\nbob 47\ncarol 95\ndave 59\neve 60\nfrank 71",
+        "description": "Print the average score with exactly 2 decimals.",
+        "expected": "69.00",
+        "solution": "awk '{sum += $2} END {printf \"%.2f\\n\", sum / NR}'",
+        "hint": "Use: awk '{sum += $2} END {printf \"%.2f\\n\", sum / NR}' - NR in END is the number of lines"
+    },
+    {
+        "id": "power-07",
+        "text": "banana\napple\nbanana\ncherry\napple\ndate\nbanana",
+        "description": "Remove duplicate lines but keep the original order (the first occurrence of each line) — sort -u would change the order.",
+        "expected": "banana\napple\ncherry\ndate",
+        "solution": "awk '!seen[$0]++'",
+        "hint": "Use: awk '!seen[$0]++' - the pattern is true only the first time a line is seen"
+    },
+    {
+        "id": "power-08",
+        "text": "alice admin\nbob dev\ncarol ops\ndave dev",
+        "description": "Print every user name in UPPERCASE followed by the length of the name.",
+        "expected": "ALICE 5\nBOB 3\nCAROL 5\nDAVE 4",
+        "solution": "awk '{print toupper($1), length($1)}'",
+        "hint": "Use: awk '{print toupper($1), length($1)}' - toupper() and length() are built-in functions"
+    },
+    {
+        "id": "power-09",
+        "text": "January 31\nFebruary 28\nMarch 31\nApril 30\nMay 31",
+        "description": "Print only the first 3 letters of every month name.",
+        "expected": "Jan\nFeb\nMar\nApr\nMay",
+        "solution": "awk '{print substr($1, 1, 3)}'",
+        "hint": "Use: awk '{print substr($1, 1, 3)}' - substr(string, start, length), positions start at 1"
+    },
+    {
+        "id": "power-10",
+        "text": "2024-01-15 deploy\n2024-02-03 rollback\n2024-02-20 deploy",
+        "description": "Replace every \"-\" in the lines with \"/\" using awk (e.g. \"2024/01/15 deploy\").",
+        "expected": "2024/01/15 deploy\n2024/02/03 rollback\n2024/02/20 deploy",
+        "solution": "awk '{gsub(/-/, \"/\"); print}'",
+        "hint": "Use: awk '{gsub(/-/, \"/\"); print}' - gsub replaces all matches in $0 (sub replaces only the first)"
+    },
+    {
+        "id": "power-11",
+        "text": "report.pdf 120\nphoto.jpg 2048\nnotes.txt 3\nvideo.mp4 90000\nsong.mp3 5120",
+        "description": "Pass the limit as a variable: print files whose size (2nd field) is at least 1000, using awk -v limit=1000.",
+        "expected": "photo.jpg 2048\nvideo.mp4 90000\nsong.mp3 5120",
+        "solution": "awk -v limit=1000 '$2 >= limit'",
+        "hint": "Use: awk -v limit=1000 '$2 >= limit' - -v sets a variable before the program runs"
+    },
+    {
+        "id": "power-12",
+        "text": "alice 30 kyiv\nbob 25 lviv\ncarol 41 odesa",
+        "description": "Convert the space-separated lines to CSV (commas between fields) with awk.",
+        "expected": "alice,30,kyiv\nbob,25,lviv\ncarol,41,odesa",
+        "solution": "awk -v OFS=',' '{$1 = $1; print}'",
+        "hint": "Use: awk -v OFS=',' '{$1 = $1; print}' - assigning a field rebuilds the line with the output separator OFS"
+    },
+    {
+        "id": "power-13",
+        "text": "header\n# BEGIN CONFIG\nport=8080\nhost=example.com\n# END CONFIG\nfooter",
+        "description": "Print everything from the \"# BEGIN CONFIG\" line to the \"# END CONFIG\" line (both included).",
+        "expected": "# BEGIN CONFIG\nport=8080\nhost=example.com\n# END CONFIG",
+        "solution": "awk '/BEGIN CONFIG/,/END CONFIG/'",
+        "hint": "Use: awk '/BEGIN CONFIG/,/END CONFIG/' - a range pattern \"start, end\" selects the lines in between"
+    },
+    {
+        "id": "power-14",
+        "text": "backup.tar.gz\nreport.pdf\nphoto.jpeg\narchive.tar.bz2\nREADME",
+        "description": "Print the last extension of every file name (the text after the last dot); names without a dot print the whole name.",
+        "expected": "gz\npdf\njpeg\nbz2\nREADME",
+        "solution": "awk -F'.' '{print $NF}'",
+        "hint": "Use: awk -F'.' '{print $NF}' - with \".\" as separator the last field is the extension"
+    },
+    {
+        "id": "power-15",
+        "text": "10:00:01 INFO starting worker\n10:00:02 INFO connecting to db\n10:00:05 ERROR db timeout\n10:00:06 INFO retrying\n10:00:09 INFO connected\n10:01:30 WARN slow query 2.3s\n10:01:31 INFO request done\n10:02:00 ERROR disk full\n10:02:01 INFO cleanup started",
+        "description": "Show every ERROR line together with the line that follows it (grep puts \"--\" between separate groups).",
+        "expected": "10:00:05 ERROR db timeout\n10:00:06 INFO retrying\n--\n10:02:00 ERROR disk full\n10:02:01 INFO cleanup started",
+        "solution": "grep -A1 ERROR",
+        "hint": "Use: grep -A1 ERROR - -A NUM adds NUM lines After each match"
+    },
+    {
+        "id": "power-16",
+        "text": "10:00:01 INFO starting worker\n10:00:02 INFO connecting to db\n10:00:05 ERROR db timeout\n10:00:06 INFO retrying\n10:00:09 INFO connected\n10:01:30 WARN slow query 2.3s\n10:01:31 INFO request done\n10:02:00 ERROR disk full\n10:02:01 INFO cleanup started",
+        "description": "Show the 2 lines before every ERROR line, with line numbers (grep -n marks matches with \":\" and context lines with \"-\").",
+        "expected": "1-10:00:01 INFO starting worker\n2-10:00:02 INFO connecting to db\n3:10:00:05 ERROR db timeout\n--\n6-10:01:30 WARN slow query 2.3s\n7-10:01:31 INFO request done\n8:10:02:00 ERROR disk full",
+        "solution": "grep -n -B2 ERROR",
+        "hint": "Use: grep -n -B2 ERROR - -B NUM adds NUM lines Before each match"
+    },
+    {
+        "id": "power-17",
+        "text": "10:00:01 INFO starting worker\n10:00:02 INFO connecting to db\n10:00:05 ERROR db timeout\n10:00:06 INFO retrying\n10:00:09 INFO connected\n10:01:30 WARN slow query 2.3s\n10:01:31 INFO request done\n10:02:00 ERROR disk full\n10:02:01 INFO cleanup started",
+        "description": "Show the WARN line with one line of context on each side.",
+        "expected": "10:00:09 INFO connected\n10:01:30 WARN slow query 2.3s\n10:01:31 INFO request done",
+        "solution": "grep -C1 WARN",
+        "hint": "Use: grep -C1 WARN - -C NUM is Context: NUM lines before and after"
+    },
+    {
+        "id": "power-18",
+        "text": "4.0K docs\n1.2G videos\n512 notes.txt\n38M photos\n900K music\n2.5G backups",
+        "description": "These are disk usages like \"du -h\" prints them. Show the 3 biggest entries, biggest first.",
+        "expected": "2.5G backups\n1.2G videos\n38M photos",
+        "solution": "sort -hr | head -3",
+        "hint": "Use: sort -hr | head -3 - -h understands K, M, G suffixes; plain -n would think 900K > 2.5G"
+    },
+    {
+        "id": "power-19",
+        "text": "app-1.9.2\napp-1.10.0\napp-1.2.14\napp-1.10.1\napp-0.9.9",
+        "description": "Print the newest version (versions compare number by number: 1.10 is newer than 1.9).",
+        "expected": "app-1.10.1",
+        "solution": "sort -V | tail -1",
+        "hint": "Use: sort -V | tail -1 - version sort compares the numbers inside the strings"
+    },
+    {
+        "id": "power-20",
+        "text": "NAME SIZE OWNER\nreport.pdf 120K alice\nvideo.mp4 1.2G bob\nnotes 3 carol",
+        "description": "Align the columns into a neat table (columns separated by at least two spaces).",
+        "expected": "NAME        SIZE  OWNER\nreport.pdf  120K  alice\nvideo.mp4   1.2G  bob\nnotes       3     carol",
+        "solution": "column -t",
+        "hint": "Use: column -t - builds a table from whitespace-separated fields"
+    },
+    {
+        "id": "power-21",
+        "text": "The quick brown fox jumps over the lazy dog and keeps running far away",
+        "description": "Wrap the text to lines of at most 20 characters, breaking only at spaces.",
+        "expected": "The quick brown fox \njumps over the lazy \ndog and keeps \nrunning far away",
+        "solution": "fold -s -w 20",
+        "hint": "Use: fold -s -w 20 - -w sets the width, -s breaks at spaces instead of in the middle of words"
+    },
+    {
+        "id": "power-22",
+        "text": "",
+        "description": "Print the numbers from 1 to 10 on one line, separated by commas. (There is no input text: generate the numbers.)",
+        "expected": "1,2,3,4,5,6,7,8,9,10",
+        "solution": "seq -s, 10",
+        "hint": "Use: seq -s, 10 - seq prints number sequences, -s sets the separator"
+    },
+    {
+        "id": "power-23",
+        "text": "",
+        "description": "Print \"item-01\" to \"item-05\", one per line.",
+        "expected": "item-01\nitem-02\nitem-03\nitem-04\nitem-05",
+        "solution": "seq -f 'item-%02g' 5",
+        "hint": "Use: seq -f 'item-%02g' 5 - -f uses a printf format; %02g pads with zeros (seq 5 | awk '{printf \"item-%02d\\n\", $1}' works too)"
+    },
+    {
+        "id": "power-24",
+        "text": "a,b;c\nx;y,z",
+        "description": "Swap commas and semicolons in one step: every \",\" becomes \";\" and every \";\" becomes \",\".",
+        "expected": "a;b,c\nx,y;z",
+        "solution": "sed 'y/,;/;,/'",
+        "hint": "Use: sed 'y/,;/;,/' - y/abc/xyz/ translates characters one to one (like tr)"
+    },
+    {
+        "id": "power-25",
+        "text": "alice,82\nbob,47\ncarol,95",
+        "description": "Insert the header line \"name,score\" before the first line.",
+        "expected": "name,score\nalice,82\nbob,47\ncarol,95",
+        "solution": "sed '1i name,score'",
+        "hint": "Use: sed '1i name,score' - \"i\" inserts a line before the addressed one (\"a\" appends after it)"
+    },
+    {
+        "id": "power-26",
+        "text": "user=admin\npassword=hunter2\ntoken=abc123\nport=8080",
+        "description": "Replace lines 2 and 3 with a single line \"[secrets removed]\".",
+        "expected": "user=admin\n[secrets removed]\nport=8080",
+        "solution": "sed '2,3c [secrets removed]'",
+        "hint": "Use: sed '2,3c [secrets removed]' - \"c\" changes the addressed lines; for a range the text replaces the whole range once"
+    },
+    {
+        "id": "power-27",
+        "text": "eth0 up 1500\nlo up 65536\nwlan0 down 1500\ndocker0 up 1500",
+        "description": "Using an awk function: define function isup(s) that returns 1 when s is \"up\", and print the interfaces that are up.",
+        "expected": "eth0\nlo\ndocker0",
+        "solution": "awk 'function isup(s) {return s == \"up\"} isup($2) {print $1}'",
+        "hint": "Use: awk 'function isup(s) {return s == \"up\"} isup($2) {print $1}' - functions are defined outside of the { } rules"
+    },
+    {
+        "id": "power-28",
+        "text": "GET /index.html 200\nPOST /api/login 401\nGET /api/users 200\nGET /missing 404\nPOST /api/login 200\nDELETE /api/users/7 403\nGET /index.html 200\nPUT /api/users/3 200\nGET /api/orders 500",
+        "description": "For every status code print how many requests got it and which paths (in input order, separated by spaces), e.g. \"200 5: /index.html ...\", sorted by status code.",
+        "expected": "200 5: /index.html /api/users /api/login /index.html /api/users/3\n401 1: /api/login\n403 1: /api/users/7\n404 1: /missing\n500 1: /api/orders",
+        "solution": "awk '{n[$3]++; paths[$3] = paths[$3] \" \" $2} END {for (s in n) print s, n[s] \":\" paths[s]}' | sort",
+        "hint": "Use: awk '{n[$3]++; paths[$3] = paths[$3] \" \" $2} END {for (s in n) print s, n[s] \":\" paths[s]}' | sort - two arrays with the same keys; strings are joined by writing them next to each other"
+    }
+]

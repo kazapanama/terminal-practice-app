@@ -1,11 +1,14 @@
-// Generates data/master.json and data/realworld.json.
+// Generates data/master.json, power.json, files.json and realworld.json.
 // Each task defines a stable id, text and solution; `expected` is computed by actually
 // running the solution through the app's command implementations, so the
 // data can never drift from the engine.
 // Run: node scripts/generateLevels.mjs
 
 import { writeFileSync } from 'fs';
-import { executePipeline } from '../js/commands.js';
+import { runPipeline } from '../js/commands.js';
+import { VirtualFS } from '../js/vfs.js';
+import { power } from './levels/power.mjs';
+import { files } from './levels/files.mjs';
 
 // --- Master level: awk, advanced sed, nl, paste, and power flags -----------
 
@@ -439,22 +442,23 @@ const realworld = [
 
 function build(tasks, name) {
     const out = tasks.map((t, i) => {
-        let expected;
-        try {
-            expected = executePipeline(t.text, t.solution);
-        } catch (e) {
-            console.error(`${name} #${i + 1}: solution failed: ${t.solution} -> ${e.message}`);
+        const where = `${name} #${i + 1} (${t.id})`;
+        const vfs = new VirtualFS(t.files || {});
+        const r = runPipeline(t.text, t.solution, { fs: vfs });
+        if (r.stderr.length) {
+            console.error(`${where}: solution failed: ${t.solution} -> ${r.stderr.join(' / ')}`);
             process.exit(1);
         }
-        if (!expected.trim()) {
-            console.error(`${name} #${i + 1}: solution produced empty output: ${t.solution}`);
+        const expected = r.output;
+        if (!t.checkFiles && !expected.trim()) {
+            console.error(`${where}: solution produced empty output: ${t.solution}`);
             process.exit(1);
         }
-        if (expected.trim() === t.text.trim()) {
-            console.error(`${name} #${i + 1}: solution is a no-op: ${t.solution}`);
+        if (!t.files && expected.trim() === t.text.trim()) {
+            console.error(`${where}: solution is a no-op: ${t.solution}`);
             process.exit(1);
         }
-        return {
+        const challenge = {
             id: t.id,
             text: t.text,
             description: t.description,
@@ -462,10 +466,28 @@ function build(tasks, name) {
             solution: t.solution,
             hint: t.hint
         };
+        if (t.files) challenge.files = t.files;
+        if (t.checkFiles) {
+            challenge.expectedFiles = Object.fromEntries(t.checkFiles.map(f => {
+                if (!vfs.isFile(f)) {
+                    console.error(`${where}: solution did not create ${f}`);
+                    process.exit(1);
+                }
+                return [f, vfs.read(f)];
+            }));
+        }
+        return challenge;
     });
+    const ids = new Set();
+    for (const c of out) {
+        if (ids.has(c.id)) { console.error(`duplicate id ${c.id}`); process.exit(1); }
+        ids.add(c.id);
+    }
     writeFileSync(`data/${name}.json`, JSON.stringify(out, null, 4) + '\n');
     console.log(`data/${name}.json: ${out.length} challenges`);
 }
 
 build(master, 'master');
+build(power, 'power');
+build(files, 'files');
 build(realworld, 'realworld');

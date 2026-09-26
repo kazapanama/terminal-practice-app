@@ -16,7 +16,8 @@ import {
     deselectAllCommands,
     clearOutputPanel,
     toggleInputEditor,
-    restoreSandboxText
+    restoreSandboxText,
+    resetFiles
 } from './ui.js';
 import { initTerminal } from './terminal.js';
 
@@ -71,7 +72,8 @@ function initEventListeners() {
         input: el.commandInput,
         help: el.terminalHelp,
         onRun: runCommand,
-        onClear: clearOutputPanel
+        onClear: clearOutputPanel,
+        fs: () => state.vfs
     });
 
     // Difficulty buttons
@@ -87,6 +89,7 @@ function initEventListeners() {
     // Sandbox input editing
     el.editInputBtn.addEventListener('click', toggleInputEditor);
     el.restoreInputBtn.addEventListener('click', restoreSandboxText);
+    el.resetFilesBtn.addEventListener('click', resetFiles);
 
     // Practice mode buttons
     el.skipBtn.addEventListener('click', skipPracticeProblem);

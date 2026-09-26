@@ -12,7 +12,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      # Real GNU tools for the differential test (gawk replaces mawk as awk)
-      - run: sudo apt-get update && sudo apt-get install -y gawk
+      # Real GNU tools for the differential test (gawk replaces mawk as awk,
+      # bsdextrautils provides column)
+      - run: sudo apt-get update && sudo apt-get install -y gawk bsdextrautils
       - run: npm test
       - run: npm run test:diff

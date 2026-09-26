@@ -4,6 +4,7 @@
 import { readFileSync } from 'fs';
 import { solutionSkeleton, hintSteps } from '../js/hints.js';
 import { analyzeMismatch, diffLines } from '../js/feedback.js';
+import { LEVELS } from '../js/state.js';
 
 let pass = 0, fail = 0;
 function eq(name, actual, expected) {
@@ -32,7 +33,7 @@ eq('extra tip', analyzeMismatch('a\nb\nc', 'a\nb', 'z').tips[0].startsWith('All 
 eq('missing tip', analyzeMismatch('a', 'a\nb', 'z').tips[0].startsWith('Every line you printed'), true);
 
 // Every challenge solution must produce a skeleton and a full set of hints
-for (const level of ['beginner', 'intermediate', 'advanced', 'expert', 'master', 'realworld']) {
+for (const level of LEVELS) {
     for (const ch of JSON.parse(readFileSync(`data/${level}.json`, 'utf8'))) {
         const h = hintSteps(ch);
         if (h.length === 3 && h[2].code === ch.solution && h[1].code) pass++;

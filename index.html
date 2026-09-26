@@ -34,6 +34,8 @@
                     <button class="difficulty-btn" data-level="advanced">Advanced</button>
                     <button class="difficulty-btn" data-level="expert">Expert</button>
                     <button class="difficulty-btn" data-level="master">Master</button>
+                    <button class="difficulty-btn" data-level="power">Power Tools</button>
+                    <button class="difficulty-btn" data-level="files">Files &amp; Shell</button>
                     <button class="difficulty-btn" data-level="realworld">Real World</button>
                     <button class="difficulty-btn" data-level="sandbox">Sandbox</button>
                 </div>
@@ -101,6 +103,7 @@
                 <div class="expected-output">
                     <h4>Expected Output:</h4>
                     <pre id="expected-output">...</pre>
+                    <div class="expected-files hidden" id="expected-files"></div>
                 </div>
             </div>
 
@@ -117,7 +120,9 @@
                             <button type="button" class="panel-btn" id="edit-input-btn">Edit text</button>
                             <button type="button" class="panel-btn hidden" id="restore-input-btn">Restore original</button>
                         </div>
+                        <button type="button" class="panel-btn hidden" id="reset-files-btn" title="Undo every change your commands made to the files">Reset files</button>
                     </div>
+                    <div class="input-tabs hidden" id="input-tabs" aria-label="Standard input and files of this task"></div>
                     <div class="panel-content">
                         <div class="text-display" id="input-text"></div>
                         <textarea class="input-editor hidden" id="input-editor" aria-label="Input text" spellcheck="false"></textarea>
@@ -274,6 +279,85 @@
                         <p>Chain commands together</p>
                         <code>cmd1 | cmd2 | cmd3</code><br>
                         Example: <code>sort | uniq -c | sort -rn</code>
+                    </div>
+                    <div class="command-card">
+                        <h4>Files &amp; the shell</h4>
+                        <p>Tasks with files list them in the Input panel</p>
+                        <code>grep ERROR app.log</code> (file argument)<br>
+                        <code>wc -l *.log</code> (wildcards: * ? [ab])<br>
+                        <code>sort a.txt &gt; out.txt</code> (write a file)<br>
+                        <code>grep x f &gt;&gt; log.txt</code> (append)<br>
+                        <code>tr a-z A-Z &lt; f.txt</code> (file as stdin)<br>
+                        <code>cmd 2&gt;/dev/null</code> (hide errors), <code>2&gt;&amp;1</code><br>
+                        <code>a; b</code> (one after another)<br>
+                        <code>a &amp;&amp; b</code> / <code>a || b</code> (if a succeeded / failed)<br>
+                        <code>echo $?</code> (exit status of the last command)
+                    </div>
+                    <div class="command-card">
+                        <h4>awk — the language</h4>
+                        <p>Arrays, conditions, loops, printf, functions</p>
+                        <code>awk '{c[$1]++} END {for (k in c) print k, c[k]}'</code><br>
+                        <code>awk '{s[$1] += $2} END {...}'</code> (sum per key)<br>
+                        <code>awk '!seen[$0]++'</code> (unique, keep order)<br>
+                        <code>awk '{printf "%-10s %5.2f\n", $1, $2}'</code><br>
+                        <code>awk '{if ($2 &gt; 5) print "big"; else print "small"}'</code><br>
+                        <code>awk -v n=3 'NR &lt;= n'</code> (variables)<br>
+                        <code>length() substr() index() split()</code><br>
+                        <code>sub() gsub() match() toupper() tolower()</code><br>
+                        <code>awk '/start/,/end/'</code> (range pattern)
+                    </div>
+                    <div class="command-card">
+                        <h4>grep — more</h4>
+                        <p>Context and files</p>
+                        <code>grep -A2 x</code> / <code>-B2</code> / <code>-C2</code> (lines after / before / around)<br>
+                        <code>grep -l x *.log</code> (names of matching files)<br>
+                        <code>grep -r x dir</code> (all files below dir)<br>
+                        <code>grep -h</code> / <code>-H</code> (hide / show file names)<br>
+                        <code>grep -q x f &amp;&amp; echo yes</code> (only the exit status)
+                    </div>
+                    <div class="command-card">
+                        <h4>sort — more</h4>
+                        <p>Human sizes, versions, output file</p>
+                        <code>sort -h</code> (2K &lt; 1M &lt; 3G)<br>
+                        <code>sort -V</code> (v1.9 &lt; v1.10)<br>
+                        <code>sort -o out.txt</code> (write the result to a file)<br>
+                        <code>sort -c</code> (check if sorted)
+                    </div>
+                    <div class="command-card">
+                        <h4>sed — more</h4>
+                        <p>Editing files and other commands</p>
+                        <code>sed -i 's/a/b/' file</code> (edit in place, <code>-i.bak</code> keeps a backup)<br>
+                        <code>sed 'y/abc/xyz/'</code> (translate characters)<br>
+                        <code>sed '1i text'</code> / <code>'$a text'</code> (insert / append a line)<br>
+                        <code>sed '2,4c text'</code> (replace lines)<br>
+                        <code>sed -n '/x/w out.txt'</code> (write matching lines to a file)
+                    </div>
+                    <div class="command-card">
+                        <h4>echo / printf / seq</h4>
+                        <p>Produce text</p>
+                        <code>echo hello</code>, <code>echo -e 'a\tb'</code><br>
+                        <code>printf '%s=%d\n' a 1 b 2</code><br>
+                        <code>seq 5</code>, <code>seq 2 2 10</code>, <code>seq -s, 5</code>, <code>seq -w 10</code>
+                    </div>
+                    <div class="command-card">
+                        <h4>fold / column</h4>
+                        <p>Layout</p>
+                        <code>fold -w 20</code> (wrap lines), <code>fold -s -w 20</code> (at spaces)<br>
+                        <code>column -t</code> (align a table), <code>column -t -s,</code>
+                    </div>
+                    <div class="command-card">
+                        <h4>comm / join / paste</h4>
+                        <p>Combine files</p>
+                        <code>comm -12 a b</code> (lines in both sorted files)<br>
+                        <code>comm -23 a b</code> (only in a)<br>
+                        <code>join a b</code> (match lines on the 1st field)<br>
+                        <code>paste -d, a b</code> (side by side)
+                    </div>
+                    <div class="command-card">
+                        <h4>ls / tee</h4>
+                        <p>Files and copies of output</p>
+                        <code>ls</code>, <code>ls logs</code>, <code>ls *.log</code>, <code>ls -F</code><br>
+                        <code>sort f | tee out.txt | head -3</code> (save and pass on)
                     </div>
                 </div>
             </div>

@@ -7,7 +7,9 @@
 
 import { randInt, pick, shuffle, weightedPick } from './utils.js';
 import { dataGenerators, datasetInfo } from './dataGenerators.js';
-import { executePipeline } from './commands.js';
+import { runPipeline } from './commands.js';
+import { VirtualFS } from './vfs.js';
+import { extraTemplates, extraRecipes } from './extraProblems.js';
 
 export const commandDefs = {
     grep: { name: 'grep', desc: 'Search patterns' },
@@ -24,7 +26,12 @@ export const commandDefs = {
     paste: { name: 'paste', desc: 'Join lines' },
     rev: { name: 'rev', desc: 'Reverse lines' },
     tac: { name: 'tac', desc: 'Reverse order' },
-    cat: { name: 'cat', desc: 'Pass through' }
+    cat: { name: 'cat', desc: 'Pass through' },
+    fold: { name: 'fold', desc: 'Wrap lines' },
+    column: { name: 'column', desc: 'Align a table' },
+    seq: { name: 'seq', desc: 'Number sequences' },
+    comm: { name: 'comm', desc: 'Compare lists' },
+    join: { name: 'join', desc: 'Join files' }
 };
 
 const LOG_LEVEL = () => pick(['ERROR', 'WARNING', 'INFO', 'DEBUG']);
@@ -695,6 +702,14 @@ export const problemGenerators = {
     }
 };
 
+// Extra templates: mixed in with the built-in ones (about a third of the time)
+for (const [cmd, templates] of Object.entries(extraTemplates)) {
+    const base = problemGenerators[cmd];
+    problemGenerators[cmd] = base
+        ? () => (Math.random() < 0.35 ? pick(templates)() : base())
+        : () => pick(templates)();
+}
+
 // ---------------------------------------------------------------------------
 // Pipeline recipes
 // ---------------------------------------------------------------------------
@@ -1062,6 +1077,8 @@ export const pipeRecipes = [
 // Problem generation with difficulty control and output validation
 // ---------------------------------------------------------------------------
 
+pipeRecipes.push(...extraRecipes);
+
 function recipesFor(selected, lenFilter) {
     return pipeRecipes.filter(r =>
         lenFilter(r.len) && r.cmds.every(c => selected.includes(c))
@@ -1109,16 +1126,14 @@ export function generateProblem(selectedCommands, difficulty = 'mixed', weight =
     for (let attempt = 0; attempt < 25; attempt++) {
         const problem = tryGenerate(selected, difficulty, weight);
         if (!problem) break;
-        try {
-            const expected = executePipeline(problem.text, problem.solution);
-            if (!expected.trim()) continue;
-            if (expected.trim() === problem.text.trim()) continue;
-            if (!problem.hint) problem.hint = problem.solution;
-            problem.expected = expected;
-            return problem;
-        } catch (e) {
-            continue;
-        }
+        const run = runPipeline(problem.text, problem.solution, { fs: new VirtualFS(problem.files || {}) });
+        if (run.stderr.length) continue;
+        const expected = run.output;
+        if (!expected.trim()) continue;
+        if (expected.trim() === problem.text.trim()) continue;
+        if (!problem.hint) problem.hint = problem.solution;
+        problem.expected = expected;
+        return problem;
     }
 
     // Safe fallback
@@ -1133,6 +1148,6 @@ export function generateProblem(selectedCommands, difficulty = 'mixed', weight =
         cmds: ['grep'],
         isPipe: false
     };
-    fallback.expected = executePipeline(fallback.text, fallback.solution);
+    fallback.expected = runPipeline(fallback.text, fallback.solution).output;
     return fallback;
 }

@@ -4,7 +4,7 @@ const STORAGE_KEY = 'linuxCommandPractice';
 const STORAGE_VERSION = 2;
 
 // Challenge levels in the order they are played (sandbox has no goals)
-export const LEVELS = ['beginner', 'intermediate', 'advanced', 'expert', 'master', 'realworld'];
+export const LEVELS = ['beginner', 'intermediate', 'advanced', 'expert', 'master', 'power', 'files', 'realworld'];
 export const ALL_LEVELS = [...LEVELS, 'sandbox'];
 
 function freshTask() {
@@ -32,7 +32,12 @@ export const state = {
     // Revealed hint steps for the task on screen
     hintLevel: 0,
     // Sandbox input edited by the user: { 'sandbox-01': 'text' }
-    sandboxTexts: {}
+    sandboxTexts: {},
+    // The task's virtual files (a VirtualFS), the exit status of the last
+    // command line ($?) and the tab shown in the Input panel
+    vfs: null,
+    lastStatus: 0,
+    inputTab: 'stdin'
 };
 
 export function resetTask() {

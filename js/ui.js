@@ -6,7 +6,7 @@ import {
     commandWeight, saveProgress
 } from './state.js';
 import { runPipeline } from './commands.js';
-import { splitPipeline } from './utils.js';
+import { VirtualFS } from './vfs.js';
 import { commandDefs, generateProblem } from './problemGenerators.js';
 import { analyzeMismatch, diffLines } from './feedback.js';
 import { hintSteps } from './hints.js';
@@ -57,6 +57,9 @@ export function initElements() {
         editInputBtn: document.getElementById('edit-input-btn'),
         restoreInputBtn: document.getElementById('restore-input-btn'),
         inputEditor: document.getElementById('input-editor'),
+        inputTabs: document.getElementById('input-tabs'),
+        resetFilesBtn: document.getElementById('reset-files-btn'),
+        expectedFiles: document.getElementById('expected-files'),
         challengeModeTitle: document.getElementById('challenge-mode-title'),
         commandCheckboxes: document.getElementById('command-checkboxes'),
         generateBtn: document.getElementById('generate-btn'),
@@ -288,11 +291,11 @@ function lineCount(text) {
 
 let currentSteps = [];
 
-function renderSteps(steps, failedCommand = null) {
+function renderSteps(steps) {
     const bar = elements.pipelineSteps;
     currentSteps = steps;
     bar.innerHTML = '';
-    if (steps.length + (failedCommand ? 1 : 0) < 2) {
+    if (steps.length < 2) {
         bar.classList.add('hidden');
         return;
     }
@@ -301,20 +304,17 @@ function renderSteps(steps, failedCommand = null) {
         const n = lineCount(step.output);
         const chip = document.createElement('button');
         chip.type = 'button';
-        chip.className = 'step-chip';
-        chip.textContent = `${step.command} → ${n}`;
-        chip.title = `Show the output after stage ${i + 1} (${n} line${n === 1 ? '' : 's'})`;
+        chip.className = 'step-chip' + (step.failed ? ' failed' : '');
+        chip.textContent = step.redirectedTo
+            ? `${step.command} ✎`
+            : `${step.command} → ${n}${step.failed ? ' ✗' : ''}`;
+        chip.title = step.redirectedTo
+            ? `Output written to ${step.redirectedTo}`
+            : `Show the output of stage ${i + 1} (${n} line${n === 1 ? '' : 's'})${step.failed ? ' — this stage reported an error' : ''}`;
         chip.addEventListener('click', () => selectStep(i));
         bar.appendChild(chip);
     });
-    if (failedCommand) {
-        const chip = document.createElement('span');
-        chip.className = 'step-chip failed';
-        chip.textContent = `${failedCommand} ✗`;
-        chip.title = 'This stage failed — see the error below';
-        bar.appendChild(chip);
-    }
-    if (steps.length) selectStep(steps.length - 1);
+    selectStep(steps.length - 1);
 }
 
 function selectStep(index) {
@@ -323,7 +323,9 @@ function selectStep(index) {
     showOutput(step.output);
     const n = lineCount(step.output);
     const isLast = index === currentSteps.length - 1;
-    elements.outputStats.textContent = isLast ? `${n} line(s)` : `${n} line(s) after stage ${index + 1}`;
+    elements.outputStats.textContent = step.redirectedTo
+        ? `stage ${index + 1} wrote to ${step.redirectedTo}`
+        : isLast ? `${n} line(s)` : `${n} line(s) after stage ${index + 1}`;
     elements.pipelineSteps.querySelectorAll('button.step-chip').forEach((chip, i) => {
         chip.classList.toggle('active', i === index);
         chip.setAttribute('aria-pressed', String(i === index));
@@ -368,6 +370,141 @@ function renderFeedback(actual, expected) {
         box.appendChild(legend);
     }
     box.classList.remove('hidden');
+}
+
+function renderFileFeedback(bad) {
+    const box = elements.feedback;
+    box.innerHTML = '';
+    const title = document.createElement('div');
+    title.className = 'feedback-title';
+    title.textContent = bad.actual === null
+        ? `Not quite yet. The file ${bad.name} does not exist yet.`
+        : `Not quite yet. ${bad.name} does not contain the expected text.`;
+    box.appendChild(title);
+    const tip = document.createElement('div');
+    tip.className = 'feedback-tip';
+    tip.textContent = 'If an earlier attempt changed the files, press "Reset files" in the Input panel.';
+    box.appendChild(tip);
+    if (bad.actual !== null) {
+        const pre = document.createElement('div');
+        pre.className = 'diff';
+        for (const d of diffLines(bad.actual.replace(/\n+$/, ''), bad.expected.replace(/\n+$/, ''))) {
+            const line = document.createElement('div');
+            line.className = `diff-line diff-${d.type}`;
+            line.textContent = (d.type === 'extra' ? '- ' : d.type === 'missing' ? '+ ' : '  ') + d.text;
+            pre.appendChild(line);
+        }
+        box.appendChild(pre);
+    }
+    box.classList.remove('hidden');
+}
+
+// Compares the terminal output and the task's files with what is expected.
+// Returns null when there is nothing to check (sandbox).
+function checkTask(task, output) {
+    const checksOutput = task.expected !== null && task.expected !== undefined &&
+        !(task.expectedFiles && task.expected === '');
+    const checksFiles = !!task.expectedFiles;
+    if (!checksOutput && !checksFiles) return null;
+    const outputOk = !checksOutput || output.trim() === task.expected.trim();
+    let badFile = null;
+    for (const [name, content] of Object.entries(task.expectedFiles || {})) {
+        const actual = state.vfs.isFile(name) ? state.vfs.read(name) : null;
+        if (actual === null || actual.replace(/\n+$/, '') !== content.replace(/\n+$/, '')) {
+            badFile = { name, expected: content, actual };
+            break;
+        }
+    }
+    return { ok: outputOk && !badFile, outputOk, badFile };
+}
+
+// ---------------------------------------------------------------------------
+// Input panel: standard input and the task's files
+// ---------------------------------------------------------------------------
+
+function currentTask() {
+    return state.currentMode === 'challenges' ? currentChallenge() : state.currentPracticeChallenge;
+}
+
+function setupTaskFiles(task) {
+    state.vfs = new VirtualFS(task?.files || {});
+    state.lastStatus = 0;
+    state.inputTab = state.currentText === '' && state.vfs.files.size ? state.vfs.walk('')[0] : 'stdin';
+    renderInputPanel();
+    renderExpectedFiles(task);
+}
+
+function shownInputText() {
+    if (state.inputTab === 'stdin') return state.currentText;
+    return state.vfs.read(state.inputTab).replace(/\n$/, '');
+}
+
+function renderInputPanel() {
+    const files = state.vfs ? state.vfs.walk('') : [];
+    const original = currentTask()?.files || {};
+    const names = [];
+    if (state.currentText !== '' || files.length === 0) names.push('stdin');
+    names.push(...files);
+    if (!names.includes(state.inputTab)) state.inputTab = names[0];
+
+    const tabs = elements.inputTabs;
+    tabs.innerHTML = '';
+    tabs.classList.toggle('hidden', files.length === 0);
+    for (const name of names) {
+        const tab = document.createElement('button');
+        tab.type = 'button';
+        tab.className = 'input-tab';
+        const isNew = name !== 'stdin' && !(name in original);
+        const changed = name !== 'stdin' && !isNew && original[name] !== state.vfs.read(name);
+        tab.textContent = name === 'stdin' ? 'stdin' : name;
+        tab.classList.toggle('active', name === state.inputTab);
+        tab.classList.toggle('changed', isNew || changed);
+        tab.title = name === 'stdin' ? 'Standard input: what commands read when no file is given'
+            : isNew ? 'Created by your commands' : changed ? 'Changed by your commands' : 'A file of this task';
+        tab.setAttribute('aria-pressed', String(name === state.inputTab));
+        tab.addEventListener('click', () => {
+            closeInputEditor(true);
+            state.inputTab = name;
+            renderInputPanel();
+        });
+        tabs.appendChild(tab);
+    }
+
+    const text = shownInputText();
+    displayText(text, elements.inputText);
+    updateStats(text);
+
+    const modified = files.length !== Object.keys(original).length || files.some(f => original[f] !== state.vfs.read(f));
+    elements.resetFilesBtn.classList.toggle('hidden', !modified);
+}
+
+function renderExpectedFiles(task) {
+    const box = elements.expectedFiles;
+    box.innerHTML = '';
+    const expectedFiles = task?.expectedFiles;
+    box.classList.toggle('hidden', !expectedFiles);
+    if (!expectedFiles) return;
+    for (const [name, content] of Object.entries(expectedFiles)) {
+        const title = document.createElement('h4');
+        title.textContent = `Expected content of ${name}:`;
+        const pre = document.createElement('pre');
+        pre.textContent = content.replace(/\n$/, '');
+        box.append(title, pre);
+    }
+}
+
+function expectedOutputText(task) {
+    if (task.expected === null) return task.expectedFiles ? '(anything)' : '(Sandbox mode - no expected output)';
+    if (task.expectedFiles && task.expected === '') return '(nothing on the screen — the result goes into a file, see below)';
+    return task.expected;
+}
+
+export function resetFiles() {
+    closeInputEditor(false);
+    state.vfs = new VirtualFS(currentTask()?.files || {});
+    state.lastStatus = 0;
+    renderInputPanel();
+    clearOutput();
 }
 
 // ---------------------------------------------------------------------------
@@ -452,8 +589,7 @@ export function loadChallenge() {
 
     closeInputEditor(false);
     state.currentText = (isSandbox && state.sandboxTexts[challenge.id]) || challenge.text;
-    displayText(state.currentText, elements.inputText);
-    updateStats(state.currentText);
+    setupTaskFiles(challenge);
     elements.sandboxActions.classList.toggle('hidden', !isSandbox);
     elements.restoreInputBtn.classList.toggle('hidden', !(isSandbox && state.sandboxTexts[challenge.id]));
 
@@ -463,9 +599,7 @@ export function loadChallenge() {
     elements.challengeNum.textContent = (state.currentChallengeIndex + 1) + completedMark;
     elements.totalChallenges.textContent = levelChallenges.length;
 
-    elements.expectedOutput.textContent = challenge.expected === null
-        ? '(Sandbox mode - no expected output)'
-        : challenge.expected;
+    elements.expectedOutput.textContent = expectedOutputText(challenge);
 
     clearOutput();
     renderHints();
@@ -524,13 +658,16 @@ function closeInputEditor(save) {
     if (save) {
         const challenge = currentChallenge();
         const text = elements.inputEditor.value.replace(/\n+$/, '');
-        state.currentText = text;
-        if (text === challenge.text) delete state.sandboxTexts[challenge.id];
-        else state.sandboxTexts[challenge.id] = text;
-        saveProgress();
-        elements.restoreInputBtn.classList.toggle('hidden', !state.sandboxTexts[challenge.id]);
-        displayText(state.currentText, elements.inputText);
-        updateStats(state.currentText);
+        if (state.inputTab === 'stdin') {
+            state.currentText = text;
+            if (text === challenge.text) delete state.sandboxTexts[challenge.id];
+            else state.sandboxTexts[challenge.id] = text;
+            saveProgress();
+            elements.restoreInputBtn.classList.toggle('hidden', !state.sandboxTexts[challenge.id]);
+        } else {
+            state.vfs.write(state.inputTab, text === '' ? '' : text + '\n');
+        }
+        renderInputPanel();
         clearOutput();
     }
     elements.inputEditor.classList.add('hidden');
@@ -544,7 +681,7 @@ export function toggleInputEditor() {
         elements.commandInput.focus();
         return;
     }
-    elements.inputEditor.value = state.currentText;
+    elements.inputEditor.value = shownInputText();
     elements.inputText.classList.add('hidden');
     elements.inputEditor.classList.remove('hidden');
     elements.editInputBtn.textContent = 'Done';
@@ -574,35 +711,35 @@ export function runCommand() {
     state.task.tried = true;
     let run;
     try {
-        run = runPipeline(state.currentText, cmdLine);
+        run = runPipeline(state.currentText, cmdLine, { fs: state.vfs, status: state.lastStatus });
     } catch (e) {
+        // syntax errors of the command line itself
         showError(e.message);
-        showWarnings(e.warnings || []);
-        const done = e.steps || [];
-        const stages = splitPipeline(cmdLine);
-        renderSteps(done, done.length < stages.length ? stages[done.length].trim() : null);
         return;
     }
 
+    state.lastStatus = run.status;
     const result = run.output;
     showWarnings(run.warnings);
-    showOutput(result);
-    elements.outputStats.textContent = `${lineCount(result)} line(s)`;
+    if (run.stderr.length) showError(run.stderr.join('\n'));
     renderSteps(run.steps);
+    showOutput(result);
+    elements.outputStats.textContent = `${lineCount(result)} line(s)` + (run.status ? ` · exit status ${run.status}` : '');
+    renderInputPanel();
 
     // Once solved, running again just shows output: no double counting
     if (state.task.resolved) return;
 
-    const expected = state.currentMode === 'challenges'
-        ? currentChallenge().expected
-        : state.currentPracticeChallenge?.expected;
-    if (expected !== null && expected !== undefined && result.trim() !== expected.trim()) {
-        renderFeedback(result, expected);
+    const task = currentTask();
+    const verdict = task ? checkTask(task, result) : null;
+    if (verdict && !verdict.ok) {
+        if (!verdict.outputOk) renderFeedback(result, task.expected);
+        else renderFileFeedback(verdict.badFile);
     }
 
     if (state.currentMode === 'challenges') {
         const challenge = currentChallenge();
-        if (challenge.expected !== null && result.trim() === challenge.expected.trim()) {
+        if (verdict && verdict.ok) {
             state.task.resolved = true;
             markChallengeCompleted(challenge, state.task.revealed);
             updateDifficultyButtons();
@@ -611,7 +748,7 @@ export function runCommand() {
             scheduleAdvance(advanceChallenge, 1500);
         }
     } else if (state.currentMode === 'practice' && state.currentPracticeChallenge) {
-        if (result.trim() === state.currentPracticeChallenge.expected.trim()) {
+        if (verdict && verdict.ok) {
             state.task.resolved = true;
             const counted = !state.task.revealed;
             recordPracticeResult(counted, state.currentPracticeChallenge.cmds);
@@ -708,12 +845,10 @@ export function generatePracticeProblem() {
 
     state.currentPracticeChallenge = problem;
     state.currentText = problem.text;
-
-    displayText(state.currentText, elements.inputText);
-    updateStats(state.currentText);
+    setupTaskFiles(problem);
 
     elements.challengeDesc.textContent = problem.description;
-    elements.expectedOutput.textContent = problem.expected;
+    elements.expectedOutput.textContent = expectedOutputText(problem);
 
     elements.targetCommand.textContent = problem.isPipe
         ? problem.cmds.join(' | ')

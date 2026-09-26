@@ -2,14 +2,16 @@
 // Run: node scripts/testCommands.mjs
 
 import { executePipeline, runPipeline } from '../js/commands.js';
+import { VirtualFS } from '../js/vfs.js';
 
 let pass = 0, fail = 0;
 
-// `expected` is the exact output, or a RegExp the error message must match
-function t(name, input, cmdLine, expected) {
+// `expected` is the exact output, or a RegExp the error message must match.
+// `files` sets up the task's virtual file system.
+function t(name, input, cmdLine, expected, files) {
     let actual;
     try {
-        actual = executePipeline(input, cmdLine);
+        actual = executePipeline(input, cmdLine, files ? { fs: new VirtualFS(files) } : undefined);
     } catch (e) {
         actual = `<ERROR: ${e.message}>`;
     }
@@ -129,7 +131,15 @@ t('sed -e twice', 'a b\nc d', "sed -e 's/ /_/' -e '1d'", 'c_d');
 t('sed negated address', 'a\nb\nc', "sed '2!d'", 'b');
 t('sed regex range', 'x\nstart\ny\nend\nz', "sed '/start/,/end/d'", 'x\nz');
 t('sed nth occurrence', 'a a a', "sed 's/a/X/2'", 'a X a');
-t('sed unsupported command', 'a', "sed 'y/a/b/'", /not supported/);
+t('sed unsupported command', 'a', "sed 'h'", /not supported/);
+t('sed y', 'abc', "sed 'y/abc/xyz/'", 'xyz');
+t('sed a/i/c', 'a\nb\nc', "sed -e '1i top' -e '2a after b' -e '3c C'", 'top\na\nb\nafter b\nC');
+t('sed c on a range', 'a\nb\nc\nd', "sed '2,3c X'", 'a\nX\nd');
+t('sed -i edits a file', '', "sed -i 's/a/A/' f.txt; cat f.txt", 'Abc', { 'f.txt': 'abc\n' });
+t('sed -i.bak keeps a backup', '', "sed -i.bak 's/a/A/' f.txt; cat f.txt.bak", 'abc', { 'f.txt': 'abc\n' });
+t('sed w writes a file', 'x1\ny\nx2', "sed -n '/x/w out.txt'; cat out.txt", 'x1\nx2');
+t('sed files concatenated', '', "sed -n '$p' a b", 'b2', { a: 'a1\na2\n', b: 'b1\nb2\n' });
+t('sed -s separate files', '', "sed -s -n '$p' a b", 'a2\nb2', { a: 'a1\na2\n', b: 'b1\nb2\n' });
 t('sed prefix', 'a\nb', "sed 's/^/- /'", '- a\n- b');
 
 // awk
@@ -189,18 +199,17 @@ t('sort -u by key', 'a 1\nb 1\nc 2', 'sort -u -k2,2', 'a 1\nc 2');
 t('sort multi-char tab', 'a', "sort -t'ab'", /multi-character tab/);
 
 // unsupported options fail loudly instead of being ignored
-t('grep -A unsupported', 'a', 'grep -A1 a', /invalid option -- 'A'/);
-t('sort -h unsupported', 'a', 'sort -h', /invalid option -- 'h'/);
+t('grep -Z unsupported', 'a', 'grep -Z a', /invalid option -- 'Z'/);
+t('sort -M unsupported', 'a', 'sort -M', /invalid option -- 'M'/);
 t('file operand', 'a', 'grep a file.txt', /No such file/);
-t('awk function unsupported', 'a', "awk '{print toupper($1)}'", /toupper\(\) is not supported/);
-t('awk arrays unsupported', 'a', "awk '{c[$1]++}'", /arrays/);
-t('unknown command', 'a', 'ls', /command not found/);
-t('redirect unsupported', 'a', 'sort > out.txt', /not supported/);
+t('awk getline unsupported', 'a', "awk '{getline x}'", /getline is not supported/);
+t('unknown command', 'a', 'find .', /command not found/);
+t('subshell unsupported', 'a', '(sort)', /not supported/);
 t('empty pipe stage', 'a', 'sort | | uniq', /syntax error/);
 
 // shell behaviour
 t('double-quoted $1 is expanded by the shell', 'a b', 'awk "{print $1}"', 'a b');
-w('double-quoted $1 warning', 'a b', 'awk "{print $1}"', /expanded by the shell/);
+w('double-quoted $1 warning', 'a b', 'awk "{print $1}"', /replaced it with nothing/);
 t('backslash-escaped space', 'a b\nab', 'grep a\\ b', 'a b');
 t("ANSI-C quoting $'\\t'", 'a\tb', "cut -d$'\\t' -f2", 'b');
 

@@ -19,5 +19,19 @@
         "description": "Sandbox mode - Analyze log files! Filter by level, extract timestamps, count occurrences.",
         "expected": null,
         "hint": "Try: grep ERROR | cut -d' ' -f1,2 or grep -c INFO"
+    },
+    {
+        "id": "sandbox-04",
+        "text": "",
+        "files": {
+            "logs/app.log": "10:00 INFO start\n10:01 ERROR db timeout\n10:02 INFO retry\n10:03 ERROR disk full\n",
+            "logs/web.log": "10:00 GET / 200\n10:01 GET /api 500\n10:02 POST /login 200\n",
+            "users.csv": "id,name,team\n1,alice,eng\n2,bob,ops\n3,carol,eng\n",
+            "teams.txt": "eng Engineering\nops Operations\n",
+            "notes.txt": "rotate logs weekly\nTODO: check disk space\n"
+        },
+        "description": "Sandbox mode - A small file system to explore: ls, cat, wildcards (*.log), grep -r, redirections (> >> <), tee, ; && ||. Use Reset files to start over.",
+        "expected": null,
+        "hint": "Try: ls logs; wc -l logs/*.log; grep -r ERROR . | sort; sort -t, -k3 users.csv > by_team.csv; cat by_team.csv"
     }
 ]

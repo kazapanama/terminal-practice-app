@@ -1,0 +1,8 @@
+# The site is static; the build step only runs the test suite, so a commit
+# that breaks the command engine or the challenge data is never deployed.
+[build]
+  command = "npm test"
+  publish = "."
+
+[build.environment]
+  NODE_VERSION = "22"

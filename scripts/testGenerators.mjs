@@ -3,12 +3,13 @@
 
 import { generateProblem, problemGenerators, pipeRecipes, commandDefs } from '../js/problemGenerators.js';
 import { executePipeline } from '../js/commands.js';
+import { VirtualFS } from '../js/vfs.js';
 
 let fail = 0;
 
 function check(label, problem) {
     try {
-        const out = executePipeline(problem.text, problem.solution);
+        const out = executePipeline(problem.text, problem.solution, { fs: new VirtualFS(problem.files || {}) });
         if (!out.trim()) {
             console.log(`EMPTY OUTPUT [${label}]: ${problem.solution}`);
             console.log(`  text: ${JSON.stringify(problem.text)}`);
@@ -44,7 +45,9 @@ const subsets = [
     ['sed', 'grep'],
     ['nl', 'paste'],
     ['cut', 'sort', 'uniq'],
-    ['rev', 'tac', 'cat']
+    ['rev', 'tac', 'cat'],
+    ['fold', 'column', 'seq'],
+    ['comm', 'join', 'paste']
 ];
 for (const difficulty of ['single', 'short', 'long', 'mixed']) {
     for (const subset of subsets) {

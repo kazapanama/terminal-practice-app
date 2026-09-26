@@ -1039,3 +1039,56 @@ button.challenge-box {
         grid-template-columns: 1fr;
     }
 }
+
+/* Input panel: stdin and file tabs */
+.input-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px 10px;
+    border-bottom: 1px solid #0f3460;
+    background: rgba(15, 52, 96, 0.35);
+}
+
+.input-tab {
+    padding: 3px 10px;
+    background: #0d1b2a;
+    border: 1px solid #0f3460;
+    border-radius: 4px;
+    color: #bbb;
+    font-family: inherit;
+    font-size: 0.78rem;
+    cursor: pointer;
+}
+
+.input-tab:hover {
+    border-color: #00ff88;
+}
+
+.input-tab.active {
+    border-color: #00ff88;
+    color: #00ff88;
+}
+
+.input-tab.changed::after {
+    content: ' \2022';
+    color: #ffc107;
+}
+
+#reset-files-btn {
+    border-color: #ffc107;
+    color: #ffc107;
+}
+
+#reset-files-btn:hover {
+    background: #ffc107;
+    color: #1a1a2e;
+}
+
+.expected-files h4 {
+    margin-top: 12px;
+}
+
+.error-message {
+    white-space: pre-wrap;
+}
